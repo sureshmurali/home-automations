@@ -1,0 +1,53 @@
+# Solar House Card — Example Lovelace config
+#
+# Setup:
+#   1. npm install && npm run build
+#   2. Copy dist/solar-house-card.js → config/www/solar-house-card.js
+#   3. Copy homeIllustration.png    → config/www/homeIllustration.png
+#   4. Add resource: /local/solar-house-card.js (JavaScript Module)
+#   5. Add this card via Manual/Code editor
+
+type: custom:solar-house-card
+
+# --- Background ---
+# Single image:
+image: /local/homeIllustration.png
+
+# Or weather/time variants (use instead of `image`):
+# images:
+#   default: /local/solar-house-default.png
+#   sunny: /local/solar-house-sunny.png
+#   rainy: /local/solar-house-rainy.png
+#   drizzle: /local/solar-house-drizzle.png
+#   day: /local/solar-house-day.png
+#   noon: /local/solar-house-noon.png
+#   night: /local/solar-house-night.png
+# weather_entity: weather.home
+
+# --- Entities ---
+battery_entity: sensor.solar_31_remaining_stored_electricity_3
+solar_power_entity: sensor.solar_31_current_power
+# grid_entity: sensor.grid_power
+
+# --- Flow line animation ---
+show_flow_line: true
+flow_line_color: "#FFF2AF"
+# flow_line_scale: 1
+# flow_glow_radius: 5
+# flow_animation_duration: 5     # override auto speed (default: dynamic 8s→3s based on battery %)
+# flow_animation_delay: 2.5      # delay before second pulse (default: half of duration)
+
+# --- Overlay positions (adjust to your illustration) ---
+positions:
+  solar:
+    left: "48%"
+    top: "14%"
+  battery:
+    left: "93%"
+    top: "53%"
+  grid:
+    left: "9%"
+    top: "18%"
+
+# --- Preview mode (uses hardcoded test data) ---
+# preview: true

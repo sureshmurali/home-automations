@@ -1,0 +1,15 @@
+id: suresh_returned_home_wifi
+alias: Suresh - Returned home WiFi
+description: When Suresh's phone connects to home WiFi after being away, run the welcome home script.
+variables:
+  away_minutes: 30
+triggers:
+  - trigger: state
+    entity_id: sensor.pixel_6_wi_fi_connection
+    to: "OnionRings"
+conditions:
+  - condition: template
+    value_template: >
+      {{ (as_timestamp(now()) - as_timestamp(trigger.from_state.last_changed)) / 60 >= away_minutes }}
+actions:
+  - action: script.welcome_home_suresh

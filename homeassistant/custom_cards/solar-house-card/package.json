@@ -1,0 +1,18 @@
+{
+  "name": "solar-house-card",
+  "version": "1.0.0",
+  "description": "Home Assistant Lovelace card: isometric house with solar monitoring and weather-based image variants",
+  "type": "module",
+  "scripts": {
+    "build": "vite build && node -e \"const fs=require('fs'); const path=require('path'); const h=fs.readFileSync('preview.html','utf8').replace('./dist/solar-house-card.js','./solar-house-card.js'); fs.writeFileSync('dist/preview.html',h); fs.writeFileSync('dist/index.html',h); if(fs.existsSync('homeIllustration.png')) fs.copyFileSync('homeIllustration.png', path.join('dist','homeIllustration.png'));\"",
+    "preview": "npm run build && vite preview",
+    "preview:card": "npm run build && npx --yes serve -p 5000 ."
+  },
+  "dependencies": {
+    "lit": "^3.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
+  }
+}

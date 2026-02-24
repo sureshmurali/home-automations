@@ -1,0 +1,44 @@
+# Eco One Visual Card — Example Lovelace config
+#
+# Setup:
+#   1. npm install && npm run build
+#   2. Copy dist/ecoone-visual-card.js → config/www/ecoone-visual-card.js
+#   3. Add resource: /local/ecoone-visual-card.js (JavaScript Module)
+#   4. Add this card via Manual/Code editor
+#
+# The card shows a "pure visual status" — no numbers, no labels on the card.
+# All status is conveyed through animations, glows, and fill levels.
+
+type: custom:ecoone-visual-card
+
+# --- Background image (photo of your Eco One outdoor unit) ---
+image: /local/ecoone-outdoor.png
+
+# --- Aspect ratio (optional, default "auto" = image native) ---
+# aspect_ratio: "16:9"
+
+# --- Entity IDs ---
+entities:
+  fault: binary_sensor.omron_fault_status_4
+  supply_status: sensor.omron_hot_water_supply_status
+  heating_status: sensor.omron_water_heating_status
+  operation_status: sensor.omron_operation_status
+  tank_capacity_l: sensor.omron_tank_capacity
+  hot_water_remaining_l: sensor.omron_measured_amount_of_hot_water_remaining_in_tank
+  # cumulative_kwh: sensor.omron_measured_cumulative_energy
+  # schedule: sensor.omron_solar_power_generations_utilization_time
+
+# --- SVG overlay (provide your own SVG later) ---
+# svg:
+#   inline_svg: "<svg>...</svg>"
+#   svg_url: /local/ecoone-overlay.svg
+
+# --- Map your SVG element IDs (defaults shown) ---
+# svg_ids:
+#   tankFillHotId: "HotWater"
+#   tankFillColdId: "ColdWater"
+#   tankOutlineId: "Tank"
+#   fanGroupId: "Fan"
+#   flowHotPathId: "FlowHot"
+#   energyPathId: "EnergyLine"
+#   glowGroupId: "Glow"

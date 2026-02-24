@@ -1,0 +1,18 @@
+{
+  "name": "ecoone-visual-card",
+  "version": "1.0.0",
+  "description": "Home Assistant Lovelace card: premium minimal Eco One heat pump visualization with SVG overlays",
+  "type": "module",
+  "scripts": {
+    "build": "vite build && node -e \"const fs=require('fs'); const h=fs.readFileSync('preview.html','utf8').replace('./dist/ecoone-visual-card.js','./ecoone-visual-card.js'); fs.writeFileSync('dist/preview.html',h); fs.writeFileSync('dist/index.html',h); if(fs.existsSync('EcoOneIllustration.png')) fs.copyFileSync('EcoOneIllustration.png','dist/EcoOneIllustration.png');\"",
+    "preview": "npm run build && vite preview",
+    "preview:card": "npm run build && npx --yes serve -p 5001 ."
+  },
+  "dependencies": {
+    "lit": "^3.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
+  }
+}

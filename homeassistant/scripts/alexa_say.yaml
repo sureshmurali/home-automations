@@ -1,0 +1,34 @@
+alias: Alexa say
+description: >-
+  Speak a custom message via Alexa TTS (e.g. triggered from Alfred with keyword
+  "alexa").
+mode: single
+fields:
+  message:
+    name: message
+    description: Text for Alexa to speak
+    required: true
+    example: Hello from Alfred
+    selector:
+      text: null
+  target:
+    name: target
+    description: Which Alexa(s) – hall, bed, work, or all (default hall)
+    required: false
+    default: hall
+    selector:
+      text: null
+variables:
+  t: "{{ (target | default('hall')) | lower }}"
+  target_list: >-
+    {{ {'hall': ['media_player.hall_echo_dot'], 'bed':
+    ['media_player.bedroom_echo_dot'], 'work': ['media_player.echo_show'],
+    'all': ['media_player.hall_echo_dot', 'media_player.bedroom_echo_dot',
+    'media_player.echo_show']}[t] | default(['media_player.hall_echo_dot']) }}
+action:
+  - action: notify.alexa_media
+    data:
+      target: "{{ target_list }}"
+      message: "{{ message }}"
+      data:
+        type: tts

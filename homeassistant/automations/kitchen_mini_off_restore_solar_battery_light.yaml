@@ -1,0 +1,15 @@
+# Kitchen mini off – restore solar battery light level
+# After kitchen mini light turns off (e.g. after a blink from welcome home / charge reminder), set it back to mapped brightness.
+
+id: kitchen_mini_off_restore_solar_battery_light
+alias: Kitchen mini off – restore solar battery light level
+description: After kitchen mini light turns off, set it back to mapped brightness if battery is in range.
+triggers:
+  - trigger: state
+    entity_id:
+      - light.mini
+    to: "off"
+actions:
+  - delay:
+      seconds: 3
+  - action: script.solar_battery_kitchen_mini_light_mapped_brightness

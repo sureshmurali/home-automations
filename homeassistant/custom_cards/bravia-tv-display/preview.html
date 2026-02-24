@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bravia TV Display – Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0e0e0e; color: #ccc; min-height: 100vh;
+    }
+    h1 { font-size: 1.2rem; margin: 0 0 4px; font-weight: 500; }
+    .meta { margin: 0 0 16px; font-size: 0.72rem; color: #555; }
+    .preview-wrap { max-width: 520px; margin: 0 auto; }
+    ha-card {
+      display: block; background: var(--ha-card-background, #0c0c0c);
+      border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .controls {
+      margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    }
+    .controls button {
+      padding: 6px 14px; border: 1px solid #333; border-radius: 6px;
+      background: #1a1a1a; color: #666; cursor: pointer; font-size: 0.72rem;
+      transition: all 150ms ease;
+    }
+    .controls button:hover { background: #222; }
+    .controls button.active { border-color: #4fc3f7; color: #4fc3f7; }
+    .status {
+      margin-top: 14px; font-size: 0.68rem; color: #444; line-height: 1.6;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .status span { color: #888; }
+  </style>
+</head>
+<body>
+  <div class="preview-wrap">
+    <h1>Bravia TV Display</h1>
+    <p class="meta">TV illustration with live screen overlay</p>
+    <bravia-tv-display id="card"></bravia-tv-display>
+    <div class="controls">
+      <button id="btn-off" onclick="setState('off')">Off</button>
+      <button id="btn-idle" onclick="setState('idle')">Idle</button>
+      <button id="btn-youtube" class="active" onclick="setState('youtube')">YouTube</button>
+      <button id="btn-music" onclick="setState('music')">YT Music</button>
+      <button id="btn-netflix" onclick="setState('netflix')">Netflix</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+  <script type="module">
+    import './dist/bravia-tv-display.js';
+    const card = document.getElementById('card');
+    const ENTITY = 'media_player.android_tv_192_168_11_26';
+    const SC = (s) => `https://picsum.photos/seed/${s}/960/540`;
+    const presets = {
+      off:     { state:'off',     attributes:{ app_id:'', app_name:'', media_title:'', media_artist:'', entity_picture:'', is_volume_muted:false }},
+      idle:    { state:'idle',    attributes:{ app_id:'com.google.android.tvlauncher', app_name:'Home', media_title:'', media_artist:'', entity_picture:SC('home') }},
+      youtube: { state:'playing', attributes:{ app_id:'com.google.android.youtube.tv', app_name:'YouTube', media_title:'Lofi Girl – beats to relax/study to', media_artist:'Lofi Girl', entity_picture:SC('youtube') }},
+      music:   { state:'playing', attributes:{ app_id:'com.google.android.apps.youtube.music', app_name:'YouTube Music', media_title:'Blinding Lights', media_artist:'The Weeknd', entity_picture:SC('music') }},
+      netflix: { state:'playing', attributes:{ app_id:'com.netflix.ninja', app_name:'Netflix', media_title:'Stranger Things', media_artist:'', entity_picture:SC('netflix') }},
+    };
+    let current = 'youtube';
+    card.setConfig({ entity: ENTITY, image: './bravia-tv.png' });
+    function refresh() {
+      const p = presets[current];
+      card.hass = { states: { [ENTITY]: p }, callService: (d,s,x) => console.log(`[HA] ${d}.${s}`, x) };
+      document.querySelectorAll('.controls button').forEach(b => b.className = '');
+      document.getElementById('btn-' + current).className = 'active';
+      document.getElementById('status').innerHTML = `state: <span>${p.state}</span>  app: <span>${p.attributes.app_name||'—'}</span>  title: <span>${p.attributes.media_title||'—'}</span>`;
+    }
+    window.setState = (k) => { current = k; refresh(); };
+    refresh();
+  </script>
+</body>
+</html>

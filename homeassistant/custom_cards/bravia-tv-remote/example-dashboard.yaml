@@ -1,0 +1,10 @@
+# Bravia TV Remote — Example Lovelace config
+#
+# Setup:
+#   1. cd homeassistant/custom_cards/bravia-tv-remote && npm install && npm run build
+#   2. Copy dist/bravia-tv-remote.js → config/www/bravia-tv-remote.js
+#   3. Add resource: /local/bravia-tv-remote.js (JavaScript Module)
+#   4. Add this card via Manual/Code editor
+
+type: custom:bravia-tv-remote
+entity: media_player.android_tv_192_168_11_26

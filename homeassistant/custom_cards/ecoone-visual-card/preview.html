@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eco One Visual Card – Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0e0e0e;
+      color: #ccc;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.2rem; margin: 0 0 4px; font-weight: 500; }
+    .meta { margin: 0 0 16px; font-size: 0.72rem; color: #555; }
+    .preview-wrap { max-width: 520px; margin: 0 auto; }
+    ha-card {
+      display: block;
+      background: var(--ha-card-background, #1a1a1a);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .controls {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .controls button {
+      padding: 6px 14px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #1a1a1a;
+      color: #666;
+      cursor: pointer;
+      font-size: 0.72rem;
+      transition: all 150ms ease;
+    }
+    .controls button:hover { background: #222; }
+    .controls button.active { border-color: #f90; color: #f90; }
+    .controls button.active-blue { border-color: #5bc; color: #5bc; }
+    .controls button.active-red { border-color: #e55; color: #e55; }
+    .controls button.active-dim { border-color: #555; color: #888; }
+    .slider-group {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .slider-group label {
+      font-size: 0.72rem;
+      color: #666;
+      min-width: 80px;
+    }
+    .slider-group input[type="range"] {
+      flex: 1;
+      accent-color: #f90;
+    }
+    .slider-group .val {
+      font-size: 0.72rem;
+      color: #f90;
+      min-width: 42px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .status {
+      margin-top: 14px;
+      font-size: 0.68rem;
+      color: #444;
+      line-height: 1.6;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .status span { color: #888; }
+  </style>
+</head>
+<body>
+  <div class="preview-wrap">
+    <h1>Eco One Visual Card</h1>
+    <p class="meta">Local preview — toggle states below to test animations</p>
+
+    <ecoone-visual-card id="card"></ecoone-visual-card>
+
+    <div class="controls">
+      <button id="btn-heating" class="active" onclick="toggle('heating')">Heating</button>
+      <button id="btn-supply" class="active-blue" onclick="toggle('supply')">Supplying</button>
+      <button id="btn-fault" onclick="toggle('fault')">Fault</button>
+      <button id="btn-off" onclick="toggle('off')">System Off</button>
+    </div>
+
+    <div class="slider-group">
+      <label>Hot water</label>
+      <input type="range" id="fill-slider" min="0" max="120" value="88" oninput="setFill(this.value)" />
+      <span class="val" id="fill-val">88 L</span>
+    </div>
+
+    <div class="slider-group">
+      <label>Tank capacity</label>
+      <input type="range" id="cap-slider" min="10" max="150" value="70" oninput="setCap(this.value)" />
+      <span class="val" id="cap-val">70 L</span>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script type="module">
+    import './dist/ecoone-visual-card.js';
+
+    const card = document.getElementById('card');
+
+    const mockState = {
+      heating: true,
+      supply: true,
+      fault: false,
+      off: false,
+      fill: 88,
+      capacity: 70,
+    };
+
+    const ENTITIES = {
+      fault:     'binary_sensor.omron_fault_status_4',
+      supply:    'sensor.omron_hot_water_supply_status',
+      heating:   'sensor.omron_water_heating_status',
+      operation: 'sensor.omron_operation_status',
+      capacity:  'sensor.omron_tank_capacity',
+      remaining: 'sensor.omron_measured_amount_of_hot_water_remaining_in_tank',
+    };
+
+    card.setConfig({
+      image: './EcoOneIllustration.png',
+      entities: {
+        fault:                ENTITIES.fault,
+        supply_status:        ENTITIES.supply,
+        heating_status:       ENTITIES.heating,
+        operation_status:     ENTITIES.operation,
+        tank_capacity_l:      ENTITIES.capacity,
+        hot_water_remaining_l: ENTITIES.remaining,
+      },
+    });
+
+    function buildHass() {
+      return {
+        states: {
+          [ENTITIES.fault]:     { state: mockState.fault ? 'on' : 'off' },
+          [ENTITIES.supply]:    { state: mockState.supply ? 'Supplying Hot Water' : 'Stopped' },
+          [ENTITIES.heating]:   { state: mockState.heating ? 'Heating' : 'Not Heating' },
+          [ENTITIES.operation]: { state: mockState.off ? 'Off' : 'On' },
+          [ENTITIES.capacity]:  { state: String(mockState.capacity) },
+          [ENTITIES.remaining]: { state: String(mockState.fill) },
+        },
+      };
+    }
+
+    function refresh() {
+      card.hass = buildHass();
+
+      document.getElementById('btn-heating').className = mockState.heating ? 'active' : '';
+      document.getElementById('btn-supply').className  = mockState.supply  ? 'active-blue' : '';
+      document.getElementById('btn-fault').className    = mockState.fault   ? 'active-red' : '';
+      document.getElementById('btn-off').className      = mockState.off     ? 'active-dim' : '';
+
+      const pct = mockState.capacity > 0
+        ? Math.round((mockState.fill / mockState.capacity) * 100)
+        : 0;
+
+      document.getElementById('status').innerHTML =
+        `operation: <span>${mockState.off ? 'Off' : 'On'}</span>  ` +
+        `heating: <span>${mockState.heating ? 'Heating' : 'Not Heating'}</span>  ` +
+        `supply: <span>${mockState.supply ? 'Supplying' : 'Stopped'}</span><br>` +
+        `fault: <span>${mockState.fault ? 'ON' : 'off'}</span>  ` +
+        `tank: <span>${mockState.fill}L / ${mockState.capacity}L (${pct}%)</span>`;
+    }
+
+    window.toggle = function(key) {
+      mockState[key] = !mockState[key];
+      refresh();
+    };
+
+    window.setFill = function(val) {
+      mockState.fill = Number(val);
+      document.getElementById('fill-val').textContent = val + ' L';
+      refresh();
+    };
+
+    window.setCap = function(val) {
+      mockState.capacity = Number(val);
+      document.getElementById('cap-val').textContent = val + ' L';
+      refresh();
+    };
+
+    refresh();
+  </script>
+</body>
+</html>

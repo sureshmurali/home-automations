@@ -1,0 +1,76 @@
+alias: Welcome home Suresh
+description: Wait for proximity, ramp lights, blink, then greet via Alexa.
+mode: single
+variables:
+  welcome_message: "Welcome back Suresh"
+  alexa_target: "hall"
+  hue_light_entities:
+    - light.mini
+  tv_entity: "media_player.bravia_xrj_55a80k"
+  light_color: [230, 100]
+  ramp_start_brightness: 5
+  ramp_end_brightness: 100
+  ramp_transition_sec: 25
+  blink_brightness: 100
+  blink_on_sec: 0.5
+  blink_off_sec: 0.3
+  blink_count: 2
+  use_signal_wait: false
+  signal_strength_threshold: -75
+  signal_wait_timeout: "00:05:00"
+sequence:
+  - if:
+      - condition: template
+        value_template: "{{ use_signal_wait and states('sensor.pixel_6_wi_fi_signal_strength') not in ['unknown', 'unavailable', ''] }}"
+    then:
+      - wait_template: "{{ states('sensor.pixel_6_wi_fi_signal_strength') | float >= signal_strength_threshold }}"
+        timeout: "{{ signal_wait_timeout }}"
+        continue_on_timeout: true
+  - action: light.turn_on
+    target:
+      entity_id: "{{ hue_light_entities }}"
+    data:
+      hs_color: "{{ light_color }}"
+      brightness_pct: "{{ ramp_start_brightness }}"
+  - action: light.turn_on
+    target:
+      entity_id: "{{ hue_light_entities }}"
+    data:
+      brightness_pct: "{{ ramp_end_brightness }}"
+      transition: "{{ ramp_transition_sec }}"
+  - delay:
+      seconds: "{{ ramp_transition_sec }}"
+  - action: light.turn_on
+    target:
+      entity_id: "{{ hue_light_entities }}"
+    data:
+      hs_color: "{{ light_color }}"
+      brightness_pct: "{{ blink_brightness }}"
+  - delay:
+      seconds: "{{ blink_on_sec }}"
+  - action: light.turn_off
+    target:
+      entity_id: "{{ hue_light_entities }}"
+  - delay:
+      seconds: "{{ blink_off_sec }}"
+  - action: light.turn_on
+    target:
+      entity_id: "{{ hue_light_entities }}"
+    data:
+      hs_color: "{{ light_color }}"
+      brightness_pct: "{{ blink_brightness }}"
+  - delay:
+      seconds: "{{ blink_on_sec }}"
+  - action: light.turn_off
+    target:
+      entity_id: "{{ hue_light_entities }}"
+  - delay:
+      seconds: "{{ blink_off_sec }}"
+  - if:
+      - condition: template
+        value_template: "{{ states(tv_entity) != 'playing' }}"
+    then:
+      - action: script.alexa_say
+        data:
+          message: "{{ welcome_message }}"
+          target: "{{ alexa_target }}"

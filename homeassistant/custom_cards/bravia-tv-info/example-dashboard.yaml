@@ -1,0 +1,21 @@
+# Bravia TV Info — Example Lovelace config
+#
+# Setup:
+#   1. cd homeassistant/custom_cards/bravia-tv-info && npm install && npm run build
+#   2. Copy dist/bravia-tv-info.js → config/www/bravia-tv-info.js
+#   3. Add resource: /local/bravia-tv-info.js (JavaScript Module)
+#   4. Add this card via Manual/Code editor
+
+type: custom:bravia-tv-info
+entity: media_player.android_tv_192_168_11_26
+
+# apps:
+#   - name: YouTube
+#     package: com.google.android.youtube.tv
+#     icon: youtube
+#   - name: YouTube Music
+#     package: com.google.android.apps.youtube.music
+#     icon: youtube-music
+#   - name: Netflix
+#     package: com.netflix.ninja
+#     icon: netflix

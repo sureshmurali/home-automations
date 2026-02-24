@@ -1,0 +1,46 @@
+alias: Solar battery – Kitchen mini light (mapped colour)
+description: >-
+  Set kitchen mini light colour based on battery %.
+  Green 100-70 %, yellow 70-40 %, red 40-0 %.
+  Uses transition for smooth ramp.
+mode: single
+variables:
+  solar_battery_entity: sensor.solar_31_remaining_stored_electricity_3
+  kitchen_mini_light: light.mini
+  brightness: 50
+  saturation: 40
+  transition_sec: 2
+sequence:
+  - variables:
+      battery: "{{ states(solar_battery_entity) | default(0) | int(0) }}"
+      battery_clamped: "{{ [100, [0, states(solar_battery_entity) | default(0) | int(0)] | max] | min }}"
+  - variables:
+      hue: >-
+        {% if battery_clamped >= 70 %}
+          120
+        {% elif battery_clamped >= 40 %}
+          60
+        {% else %}
+          0
+        {% endif %}
+      light_color:
+        - "{{ hue }}"
+        - "{{ saturation }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ battery <= 0 }}"
+        sequence:
+          - action: light.turn_off
+            target:
+              entity_id: "{{ kitchen_mini_light }}"
+            data:
+              transition: "{{ transition_sec }}"
+    default:
+      - action: light.turn_on
+        target:
+          entity_id: "{{ kitchen_mini_light }}"
+        data:
+          hs_color: "{{ light_color }}"
+          brightness_pct: "{{ brightness }}"
+          transition: "{{ transition_sec }}"

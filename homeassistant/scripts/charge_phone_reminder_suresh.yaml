@@ -1,0 +1,94 @@
+# Home Assistant script: Charge phone reminder for Suresh
+# Blinks lights green and announces via Alexa (room chosen by which AC is on).
+# Called by automation at 21:30 when phone battery < 80% and not charging.
+alias: Charge phone reminder Suresh
+description: Remind Suresh to charge his phone via Alexa and blink lights green (called by automation).
+mode: single
+
+variables:
+  # Message announced by Alexa.
+  reminder_message: "Suresh, please charge your phone before you sleep. Battery is low."
+  # Alexa devices per room (adjust to your media_player entity IDs).
+  alexa_bedroom: "media_player.bedroom_echo_dot"
+  alexa_work_room: "media_player.echo_show"
+  alexa_living_room: "media_player.hall_echo_dot"
+  # All Alexa devices for "inform everywhere" fallback (same as alexa_* above).
+  alexa_all:
+    - media_player.bedroom_echo_dot
+    - media_player.echo_show
+    - media_player.hall_echo_dot
+  # AC entities used to decide which room Suresh is likely in (switch or climate - adjust to your setup).
+  ac_bedroom_entity: switch.bedroom_ac
+  ac_work_room_entity: switch.work_room_ac
+  ac_living_room_entity: switch.living_room_ac
+  # Hue (or other) light entity IDs to blink (use same as welcome home or your preferred lights).
+  hue_light_entities:
+    - light.mini_1
+    - light.mini_2
+  # Blink color: green. hs_color [hue 0-360, saturation 0-100]. Green ≈ 120.
+  blink_color: [120, 100]
+  blink_duration_sec: 0.5
+  blink_count: 2
+  blink_delay_sec: 0.3
+
+action:
+  # Blink lights green.
+  - repeat:
+      count: "{{ blink_count }}"
+      sequence:
+        - action: light.turn_on
+          target:
+            entity_id: "{{ hue_light_entities }}"
+          data:
+            hs_color: "{{ blink_color }}"
+            brightness_pct: 100
+        - delay:
+            seconds: "{{ blink_duration_sec }}"
+        - action: light.turn_off
+          target:
+            entity_id: "{{ hue_light_entities }}"
+        - delay:
+            seconds: "{{ blink_delay_sec }}"
+  # Choose Alexa target: bedroom AC on → bedroom; else work room AC on → Echo Show; else living room AC on → living room; else everywhere.
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ states(ac_bedroom_entity) | default('off') in ['on', 'cooling', 'heating'] }}"
+        sequence:
+          - action: notify.alexa_media
+            data:
+              target:
+                - "{{ alexa_bedroom }}"
+              message: "{{ reminder_message }}"
+              data:
+                type: tts
+      - conditions:
+          - condition: template
+            value_template: "{{ states(ac_work_room_entity) | default('off') in ['on', 'cooling', 'heating'] }}"
+        sequence:
+          - action: notify.alexa_media
+            data:
+              target:
+                - "{{ alexa_work_room }}"
+              message: "{{ reminder_message }}"
+              data:
+                type: tts
+      - conditions:
+          - condition: template
+            value_template: "{{ states(ac_living_room_entity) | default('off') in ['on', 'cooling', 'heating'] }}"
+        sequence:
+          - action: notify.alexa_media
+            data:
+              target:
+                - "{{ alexa_living_room }}"
+              message: "{{ reminder_message }}"
+              data:
+                type: tts
+      - conditions: []
+        sequence:
+          - action: notify.alexa_media
+            data:
+              target: "{{ alexa_all }}"
+              message: "{{ reminder_message }}"
+              data:
+                type: tts

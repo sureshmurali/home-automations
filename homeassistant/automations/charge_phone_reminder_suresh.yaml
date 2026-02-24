@@ -1,0 +1,23 @@
+# Charge phone reminder for Suresh at 21:30
+# Runs when phone battery is below 80%, phone is not charging, and time is 21:30.
+# Script blinks lights green and announces via bedroom Echo / work room Echo Show / living room / or all.
+- id: suresh_charge_phone_reminder
+  alias: Suresh - Charge phone reminder (21:30)
+  description: At 21:30, if phone battery is below 80% and not charging, remind Suresh to charge via Alexa and blink lights green.
+  variables:
+    # Phone battery level sensor (HA Android app: Battery Level sensor).
+    phone_battery_entity: sensor.pixel_6_battery_level
+    # Phone charging state: use 'on' when charging (binary_sensor) or 'charging' for state (sensor).
+    phone_charging_entity: binary_sensor.pixel_6_charging
+    # Battery threshold (percent). Remind only when below this.
+    battery_threshold_pct: 80
+  triggers:
+    - trigger: time
+      at: "21:30:00"
+  conditions:
+    - condition: template
+      value_template: "{{ states(phone_battery_entity) | default(0) | int(0) < battery_threshold_pct }}"
+    - condition: template
+      value_template: "{{ states(phone_charging_entity) | default('off') | lower() in ['off', 'false', 'not_charging', 'unplugged'] }}"
+  actions:
+    - action: script.charge_phone_reminder_suresh

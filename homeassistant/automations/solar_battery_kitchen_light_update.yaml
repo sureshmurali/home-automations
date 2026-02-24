@@ -1,0 +1,13 @@
+# Solar battery → Kitchen mini green light (update on battery change)
+# When solar battery level changes, run script to set green brightness from mapping. Ramp via transition.
+# Configure mapping and entities in: scripts/solar_battery_kitchen_light.yaml
+
+id: solar_battery_kitchen_light_update
+alias: Solar battery – Kitchen mini light (update on battery change)
+description: On battery % change, run script to set green brightness from mapping. Ramp via transition.
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.solar_31_remaining_stored_electricity_3
+actions:
+  - action: script.solar_battery_kitchen_mini_light_mapped_brightness
