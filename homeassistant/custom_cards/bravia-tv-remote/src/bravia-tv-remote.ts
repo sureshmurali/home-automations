@@ -207,7 +207,7 @@ export class BraviaTvRemote extends LitElement {
       background: linear-gradient(180deg, #1c1c1e 0%, #141414 50%, #111 100%);
       border-radius: 32px 32px 40px 40px;
       margin: 0 auto;
-      max-width: 300px;
+      max-width: 160px;
       padding: 22px 28px 28px;
       display: flex;
       flex-direction: column;
@@ -264,7 +264,7 @@ export class BraviaTvRemote extends LitElement {
 
     /* ── D-pad ───────────────────────────────── */
 
-    .dpad-container { position: relative; width: 160px; height: 160px; }
+    .dpad-container { position: relative; width: 140px; height: 140px; }
 
     .dpad-disc {
       position: absolute; inset: 0; border-radius: 50%;
@@ -281,13 +281,13 @@ export class BraviaTvRemote extends LitElement {
     .dpad-arrow:active { color: rgba(255,255,255,0.8); transform: scale(0.85); }
     .dpad-arrow svg { width: 20px; height: 20px; }
 
-    .dpad-arrow.up { top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
+    .dpad-arrow.up { top: -2px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
     .dpad-arrow.up:active { transform: translateX(-50%) scale(0.85); }
-    .dpad-arrow.down { bottom: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
+    .dpad-arrow.down { bottom: -2px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
     .dpad-arrow.down:active { transform: translateX(-50%) scale(0.85); }
-    .dpad-arrow.left { left: 8px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
+    .dpad-arrow.left { left: -2px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
     .dpad-arrow.left:active { transform: translateY(-50%) scale(0.85); }
-    .dpad-arrow.right { right: 8px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
+    .dpad-arrow.right { right: -2px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
     .dpad-arrow.right:active { transform: translateY(-50%) scale(0.85); }
 
     .dpad-ok {
@@ -306,7 +306,7 @@ export class BraviaTvRemote extends LitElement {
 
     /* ── Back / Home row ─────────────────────── */
 
-    .nav-row { display: flex; gap: 28px; }
+    .nav-row { display: flex; gap: 98px; }
 
     /* ── Volume ──────────────────────────────── */
 
@@ -347,7 +347,8 @@ export class BraviaTvRemote extends LitElement {
     }
     .ctrl-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
     .ctrl-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.12); }
-    .ctrl-btn svg { width: 16px; height: 16px; }
+    .ctrl-btn span { display: flex; align-items: center; justify-content: center; }
+    .ctrl-btn svg { width: 16px; height: 16px; display: block; }
 
     .ctrl-btn.sm { width: 40px; height: 34px; }
     .ctrl-btn.md { width: 46px; height: 38px; }
@@ -509,10 +510,10 @@ export class BraviaTvRemote extends LitElement {
                 <span class="btn-label">Prev</span>
               </div>
               <div class="labeled-btn">
-                <button class="ctrl-btn sm" @click="${this._mediaStop}" title="Stop">
-                  <span .innerHTML="${ICONS.stop}"></span>
+                <button class="ctrl-btn sm" @click="${this._playPause}" title="Pause">
+                  <span .innerHTML="${ICONS.pause}"></span>
                 </button>
-                <span class="btn-label">Stop</span>
+                <span class="btn-label">Pause</span>
               </div>
               <div class="labeled-btn">
                 <button class="ctrl-btn sm" @click="${this._mediaNext}" title="Next">

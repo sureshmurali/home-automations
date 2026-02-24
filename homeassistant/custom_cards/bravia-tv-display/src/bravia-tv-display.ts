@@ -486,7 +486,7 @@ export class BraviaTvDisplay extends LitElement {
 
   private _renderScreenFallback() {
     if (!this._isOn) {
-      return html`<div class="screen-power-icon" .innerHTML="${ICONS.power}"></div>`;
+      return nothing;
     }
 
     const appName = this._appName;
@@ -496,7 +496,7 @@ export class BraviaTvDisplay extends LitElement {
     const appIcon = this._getAppIcon();
 
     if (!title && !appName) {
-      return html`<div class="screen-state-text">${this._state}</div>`;
+      return nothing;
     }
 
     return html`
@@ -513,9 +513,6 @@ export class BraviaTvDisplay extends LitElement {
         : nothing}
       ${artist
         ? html`<div class="screen-media-artist">${artist}</div>`
-        : nothing}
-      ${!title && !artist
-        ? html`<div class="screen-state-text">${this._state === "idle" ? "Ready" : this._state}</div>`
         : nothing}
     `;
   }

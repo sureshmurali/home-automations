@@ -22,7 +22,7 @@ let it = class {
     return this.cssText;
   }
 };
-const ct = (r) => new it(typeof r == "string" ? r : r + "", void 0, j), ht = (r, ...t) => {
+const dt = (r) => new it(typeof r == "string" ? r : r + "", void 0, j), ht = (r, ...t) => {
   const e = r.length === 1 ? r[0] : t.reduce((s, i, n) => s + ((o) => {
     if (o._$cssResult$ === !0) return o.cssText;
     if (typeof o == "number") return o;
@@ -38,7 +38,7 @@ const ct = (r) => new it(typeof r == "string" ? r : r + "", void 0, j), ht = (r,
 }, F = K ? (r) => r : (r) => r instanceof CSSStyleSheet ? ((t) => {
   let e = "";
   for (const s of t.cssRules) e += s.cssText;
-  return ct(e);
+  return dt(e);
 })(r) : r;
 /**
  * @license
@@ -274,10 +274,10 @@ const At = (r, t) => {
   let i, n = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = A;
   for (let l = 0; l < e; l++) {
     const a = r[l];
-    let c, p, d = -1, _ = 0;
-    for (; _ < a.length && (o.lastIndex = _, p = o.exec(a), p !== null); ) _ = o.lastIndex, o === A ? p[1] === "!--" ? o = Z : p[1] !== void 0 ? o = J : p[2] !== void 0 ? (ot.test(p[2]) && (i = RegExp("</" + p[2], "g")), o = f) : p[3] !== void 0 && (o = f) : o === f ? p[0] === ">" ? (o = i ?? A, d = -1) : p[1] === void 0 ? d = -2 : (d = o.lastIndex - p[2].length, c = p[1], o = p[3] === void 0 ? f : p[3] === '"' ? tt : Q) : o === tt || o === Q ? o = f : o === Z || o === J ? o = A : (o = f, i = void 0);
+    let d, p, c = -1, _ = 0;
+    for (; _ < a.length && (o.lastIndex = _, p = o.exec(a), p !== null); ) _ = o.lastIndex, o === A ? p[1] === "!--" ? o = Z : p[1] !== void 0 ? o = J : p[2] !== void 0 ? (ot.test(p[2]) && (i = RegExp("</" + p[2], "g")), o = f) : p[3] !== void 0 && (o = f) : o === f ? p[0] === ">" ? (o = i ?? A, c = -1) : p[1] === void 0 ? c = -2 : (c = o.lastIndex - p[2].length, d = p[1], o = p[3] === void 0 ? f : p[3] === '"' ? tt : Q) : o === tt || o === Q ? o = f : o === Z || o === J ? o = A : (o = f, i = void 0);
     const b = o === f && r[l + 1].startsWith("/>") ? " " : "";
-    n += o === A ? a + yt : d >= 0 ? (s.push(c), a.slice(0, d) + rt + a.slice(d) + g + b) : a + g + (d === -2 ? l : b);
+    n += o === A ? a + yt : c >= 0 ? (s.push(d), a.slice(0, c) + rt + a.slice(c) + g + b) : a + g + (c === -2 ? l : b);
   }
   return [at(r, n + (r[e] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), s];
 };
@@ -286,29 +286,29 @@ class O {
     let i;
     this.parts = [];
     let n = 0, o = 0;
-    const l = t.length - 1, a = this.parts, [c, p] = At(t, e);
-    if (this.el = O.createElement(c, s), $.currentNode = this.el.content, e === 2 || e === 3) {
-      const d = this.el.content.firstChild;
-      d.replaceWith(...d.childNodes);
+    const l = t.length - 1, a = this.parts, [d, p] = At(t, e);
+    if (this.el = O.createElement(d, s), $.currentNode = this.el.content, e === 2 || e === 3) {
+      const c = this.el.content.firstChild;
+      c.replaceWith(...c.childNodes);
     }
     for (; (i = $.nextNode()) !== null && a.length < l; ) {
       if (i.nodeType === 1) {
-        if (i.hasAttributes()) for (const d of i.getAttributeNames()) if (d.endsWith(rt)) {
-          const _ = p[o++], b = i.getAttribute(d).split(g), T = /([.?@])?(.*)/.exec(_);
-          a.push({ type: 1, index: n, name: T[2], strings: b, ctor: T[1] === "." ? Et : T[1] === "?" ? Ct : T[1] === "@" ? St : B }), i.removeAttribute(d);
-        } else d.startsWith(g) && (a.push({ type: 6, index: n }), i.removeAttribute(d));
+        if (i.hasAttributes()) for (const c of i.getAttributeNames()) if (c.endsWith(rt)) {
+          const _ = p[o++], b = i.getAttribute(c).split(g), T = /([.?@])?(.*)/.exec(_);
+          a.push({ type: 1, index: n, name: T[2], strings: b, ctor: T[1] === "." ? Et : T[1] === "?" ? Ct : T[1] === "@" ? St : B }), i.removeAttribute(c);
+        } else c.startsWith(g) && (a.push({ type: 6, index: n }), i.removeAttribute(c));
         if (ot.test(i.tagName)) {
-          const d = i.textContent.split(g), _ = d.length - 1;
+          const c = i.textContent.split(g), _ = c.length - 1;
           if (_ > 0) {
             i.textContent = N ? N.emptyScript : "";
-            for (let b = 0; b < _; b++) i.append(d[b], P()), $.nextNode(), a.push({ type: 2, index: ++n });
-            i.append(d[_], P());
+            for (let b = 0; b < _; b++) i.append(c[b], P()), $.nextNode(), a.push({ type: 2, index: ++n });
+            i.append(c[_], P());
           }
         }
       } else if (i.nodeType === 8) if (i.data === nt) a.push({ type: 2, index: n });
       else {
-        let d = -1;
-        for (; (d = i.data.indexOf(g, d + 1)) !== -1; ) a.push({ type: 7, index: n }), d += g.length - 1;
+        let c = -1;
+        for (; (c = i.data.indexOf(g, c + 1)) !== -1; ) a.push({ type: 7, index: n }), c += g.length - 1;
       }
       n++;
     }
@@ -340,8 +340,8 @@ class kt {
     let n = $.nextNode(), o = 0, l = 0, a = s[0];
     for (; a !== void 0; ) {
       if (o === a.index) {
-        let c;
-        a.type === 2 ? c = new H(n, n.nextSibling, this, t) : a.type === 1 ? c = new a.ctor(n, a.name, a.strings, this, t) : a.type === 6 && (c = new Pt(n, this, t)), this._$AV.push(c), a = s[++l];
+        let d;
+        a.type === 2 ? d = new H(n, n.nextSibling, this, t) : a.type === 1 ? d = new a.ctor(n, a.name, a.strings, this, t) : a.type === 6 && (d = new Pt(n, this, t)), this._$AV.push(d), a = s[++l];
       }
       o !== a?.index && (n = $.nextNode(), o++);
     }
@@ -427,8 +427,8 @@ class B {
     if (n === void 0) t = x(this, t, e, 0), o = !M(t) || t !== this._$AH && t !== w, o && (this._$AH = t);
     else {
       const l = t;
-      let a, c;
-      for (t = n[0], a = 0; a < n.length - 1; a++) c = x(this, l[s + a], e, a), c === w && (c = this._$AH[a]), o || (o = !M(c) || c !== this._$AH[a]), c === h ? t = h : t !== h && (t += (c ?? "") + n[a + 1]), this._$AH[a] = c;
+      let a, d;
+      for (t = n[0], a = 0; a < n.length - 1; a++) d = x(this, l[s + a], e, a), d === w && (d = this._$AH[a]), o || (o = !M(d) || d !== this._$AH[a]), d === h ? t = h : t !== h && (t += (d ?? "") + n[a + 1]), this._$AH[a] = d;
     }
     o && !i && this.j(t);
   }
@@ -560,7 +560,7 @@ function lt(r) {
 function Ut(r) {
   return lt({ ...r, state: !0, attribute: !1 });
 }
-var Rt = Object.defineProperty, dt = (r, t, e, s) => {
+var Rt = Object.defineProperty, ct = (r, t, e, s) => {
   for (var i = void 0, n = r.length - 1, o; n >= 0; n--)
     (o = r[n]) && (i = o(t, e, i) || i);
   return i && Rt(t, e, i), i;
@@ -833,10 +833,10 @@ const u = {
                 <span class="btn-label">Prev</span>
               </div>
               <div class="labeled-btn">
-                <button class="ctrl-btn sm" @click="${this._mediaStop}" title="Stop">
-                  <span .innerHTML="${u.stop}"></span>
+                <button class="ctrl-btn sm" @click="${this._playPause}" title="Pause">
+                  <span .innerHTML="${u.pause}"></span>
                 </button>
-                <span class="btn-label">Stop</span>
+                <span class="btn-label">Pause</span>
               </div>
               <div class="labeled-btn">
                 <button class="ctrl-btn sm" @click="${this._mediaNext}" title="Next">
@@ -874,7 +874,7 @@ Y.styles = ht`
       background: linear-gradient(180deg, #1c1c1e 0%, #141414 50%, #111 100%);
       border-radius: 32px 32px 40px 40px;
       margin: 0 auto;
-      max-width: 300px;
+      max-width: 160px;
       padding: 22px 28px 28px;
       display: flex;
       flex-direction: column;
@@ -931,7 +931,7 @@ Y.styles = ht`
 
     /* ── D-pad ───────────────────────────────── */
 
-    .dpad-container { position: relative; width: 160px; height: 160px; }
+    .dpad-container { position: relative; width: 140px; height: 140px; }
 
     .dpad-disc {
       position: absolute; inset: 0; border-radius: 50%;
@@ -948,13 +948,13 @@ Y.styles = ht`
     .dpad-arrow:active { color: rgba(255,255,255,0.8); transform: scale(0.85); }
     .dpad-arrow svg { width: 20px; height: 20px; }
 
-    .dpad-arrow.up { top: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
+    .dpad-arrow.up { top: -2px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
     .dpad-arrow.up:active { transform: translateX(-50%) scale(0.85); }
-    .dpad-arrow.down { bottom: 8px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
+    .dpad-arrow.down { bottom: -2px; left: 50%; transform: translateX(-50%); width: 40px; height: 36px; }
     .dpad-arrow.down:active { transform: translateX(-50%) scale(0.85); }
-    .dpad-arrow.left { left: 8px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
+    .dpad-arrow.left { left: -2px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
     .dpad-arrow.left:active { transform: translateY(-50%) scale(0.85); }
-    .dpad-arrow.right { right: 8px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
+    .dpad-arrow.right { right: -2px; top: 50%; transform: translateY(-50%); width: 36px; height: 40px; }
     .dpad-arrow.right:active { transform: translateY(-50%) scale(0.85); }
 
     .dpad-ok {
@@ -973,7 +973,7 @@ Y.styles = ht`
 
     /* ── Back / Home row ─────────────────────── */
 
-    .nav-row { display: flex; gap: 28px; }
+    .nav-row { display: flex; gap: 98px; }
 
     /* ── Volume ──────────────────────────────── */
 
@@ -1014,7 +1014,8 @@ Y.styles = ht`
     }
     .ctrl-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
     .ctrl-btn:active { transform: scale(0.92); background: rgba(255,255,255,0.12); }
-    .ctrl-btn svg { width: 16px; height: 16px; }
+    .ctrl-btn span { display: flex; align-items: center; justify-content: center; }
+    .ctrl-btn svg { width: 16px; height: 16px; display: block; }
 
     .ctrl-btn.sm { width: 40px; height: 34px; }
     .ctrl-btn.md { width: 46px; height: 38px; }
@@ -1039,10 +1040,10 @@ Y.styles = ht`
     }
   `;
 let D = Y;
-dt([
+ct([
   lt({ attribute: !1 })
 ], D.prototype, "hass");
-dt([
+ct([
   Ut()
 ], D.prototype, "_config");
 customElements.define("bravia-tv-remote", D);
