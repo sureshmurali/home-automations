@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "preview": "npm run build && vite preview",
-    "preview:card": "npm run build && npx --yes serve -p 5012 ."
+    "dev": "vite",
+    "preview": "vite"
   },
   "dependencies": {
+    "gsap": "^3.14.2",
     "lit": "^3.2.0"
   },
   "devDependencies": {

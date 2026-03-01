@@ -6,6 +6,8 @@ A Home Assistant Lovelace custom card that provides a **full remote control** fo
 
 ## Features
 
+- **Now Playing** — displays current media title, artist, and album art
+- **App Launchers** — quick launch buttons for YouTube, Netflix, YouTube Music, and IPTV
 - **Power** toggle with on/off state indicator
 - **D-pad** — circular disc with directional arrows and a central OK button
 - **Navigation** — Back and Home buttons
@@ -53,6 +55,19 @@ All controls send ADB commands via the `androidtv.adb_command` service or use bu
 ```yaml
 type: custom:bravia-tv-remote
 entity: media_player.android_tv_192_168_11_26
+apps:
+  - name: YouTube
+    icon: youtube
+    package: com.google.android.youtube.tv
+  - name: YouTube Music
+    icon: youtube-music
+    package: com.google.android.apps.youtube.music
+  - name: Netflix
+    icon: netflix
+    package: com.netflix.ninja
+  - name: IPTV
+    icon: tv
+    package: ru.iptvremote.android.iptv
 ```
 
 ### Options
@@ -60,6 +75,17 @@ entity: media_player.android_tv_192_168_11_26
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
 | `entity` | string | **Yes** | — | Your Android TV `media_player` entity ID |
+| `apps` | array | No | YouTube, YouTube Music, Netflix, IPTV | List of app launcher buttons to display |
+
+### App Configuration
+
+Each app in the `apps` array has the following properties:
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | string | **Yes** | Display name for the app |
+| `icon` | string | **Yes** | Icon identifier (`youtube`, `youtube-music`, `netflix`, `tv`) |
+| `package` | string | **Yes** | Android package name for the app |
 
 ## Button Reference
 
@@ -159,24 +185,25 @@ The preview logs all ADB/service calls to the browser console and displays the l
 |-----------|-------|
 | `state` | Power button color (green when on, grey when off); Play/Pause icon toggle |
 | `is_volume_muted` | Mute button state |
+| `media_title` | Displayed in now playing section |
+| `media_artist` | Displayed in now playing section |
+| `entity_picture` | Album/media artwork in now playing section |
+| `app_id` | Used to highlight the currently active app |
+| `app_name` | Fallback app name display |
+| `source` | Alternative app name source |
 
-## Using All Three Cards Together
+## Using with Companion Card
 
-This remote card is designed to work alongside the companion cards:
+This remote card is designed to work alongside the bravia-tv-display card:
 
 ```yaml
-# Example: Horizontal layout with all three cards
+# Example: Horizontal layout with both cards
 type: horizontal-stack
 cards:
   - type: custom:bravia-tv-display
     entity: media_player.android_tv_192_168_11_26
     image: /local/bravia-tv.png
 
-  - type: vertical-stack
-    cards:
-      - type: custom:bravia-tv-info
-        entity: media_player.android_tv_192_168_11_26
-
-      - type: custom:bravia-tv-remote
-        entity: media_player.android_tv_192_168_11_26
+  - type: custom:bravia-tv-remote
+    entity: media_player.android_tv_192_168_11_26
 ```
