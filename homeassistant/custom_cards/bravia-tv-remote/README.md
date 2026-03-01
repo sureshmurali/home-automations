@@ -23,32 +23,97 @@ All controls send ADB commands via the `androidtv.adb_command` service or use bu
 - **Home Assistant** with the [Android TV integration](https://www.home-assistant.io/integrations/androidtv/) configured
 - ADB connection to your Sony Bravia Android TV
 
-## Installation
+## Installation & Deployment
 
-1. Build the card:
+### Step 1: Build the Card
 
-   ```bash
-   cd homeassistant/custom_cards/bravia-tv-remote
-   npm install
-   npm run build
-   ```
+```bash
+cd homeassistant/custom_cards/bravia-tv-remote
+npm install
+npm run build
+```
 
-2. Copy the built file to Home Assistant:
+This creates `dist/bravia-tv-remote.js` (the compiled card).
 
-   ```
-   dist/bravia-tv-remote.js  →  config/www/bravia-tv-remote.js
-   ```
+### Step 2: Deploy to Home Assistant
 
-3. Add the resource in Home Assistant:
+You have several options to deploy the card to your Home Assistant instance:
 
-   **Settings → Dashboards → Resources → Add Resource**
+#### Option A: Direct File Copy (Local Installation)
 
-   | Field | Value |
-   |-------|-------|
-   | URL   | `/local/bravia-tv-remote.js` |
-   | Type  | JavaScript Module |
+If you have direct access to your Home Assistant configuration directory:
 
-4. Add the card to a dashboard via the **Manual** or **Code editor**.
+```bash
+# Copy the built file to Home Assistant's www directory
+cp dist/bravia-tv-remote.js /path/to/homeassistant/config/www/
+
+# Example paths:
+# Docker: /volume1/docker/homeassistant/config/www/
+# HAOS: /config/www/
+# Core: ~/.homeassistant/www/
+```
+
+#### Option B: Using Samba/SMB Share
+
+1. Connect to your Home Assistant via network share (Samba/SMB)
+2. Navigate to the `config/www/` folder
+3. Copy `dist/bravia-tv-remote.js` into this folder
+
+#### Option C: Using File Editor Add-on
+
+1. Install the **File Editor** add-on from Home Assistant
+2. Create the `www` folder if it doesn't exist
+3. Upload `dist/bravia-tv-remote.js` to `config/www/`
+
+#### Option D: Using SSH/Terminal
+
+```bash
+# SSH into your Home Assistant instance
+ssh root@homeassistant.local
+
+# Create www directory if it doesn't exist
+mkdir -p /config/www
+
+# Exit SSH and copy file from your local machine
+scp dist/bravia-tv-remote.js root@homeassistant.local:/config/www/
+```
+
+### Step 3: Register the Resource in Home Assistant
+
+1. Go to **Settings → Dashboards → Resources** (top-right menu)
+2. Click **+ Add Resource**
+3. Configure:
+   - **URL**: `/local/bravia-tv-remote.js`
+   - **Resource type**: JavaScript Module
+4. Click **Create**
+
+> **Note**: You may need to clear your browser cache (Ctrl+Shift+R or Cmd+Shift+R) after adding the resource.
+
+### Step 4: Add the Card to Your Dashboard
+
+#### Using the UI Editor:
+
+1. Edit your dashboard
+2. Click **+ Add Card**
+3. Search for "Bravia TV Remote"
+4. Configure the entity
+
+#### Using YAML:
+
+```yaml
+type: custom:bravia-tv-remote
+entity: media_player.android_tv_192_168_11_26
+```
+
+### Updating the Card
+
+When you make changes and rebuild:
+
+```bash
+npm run build
+# Copy the new dist/bravia-tv-remote.js to /config/www/
+# Clear browser cache and refresh Home Assistant
+```
 
 ## Configuration
 
@@ -169,12 +234,20 @@ Each app in the `apps` array has the following properties:
 
 ## Development
 
-Preview the card locally:
+### Local Preview with Hot Reload
+
+```bash
+npm run preview:card
+# or
+npm run dev
+```
+
+This starts Vite's dev server at `http://localhost:5012` with hot module replacement (HMR). Any changes to the source code will automatically reload in the browser.
+
+### Build for Production
 
 ```bash
 npm run build
-npx serve -p 5012 .
-# Open http://localhost:5012/preview.html
 ```
 
 The preview logs all ADB/service calls to the browser console and displays the last command in the status bar.
