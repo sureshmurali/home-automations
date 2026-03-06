@@ -340,13 +340,22 @@ declare global {
   }
 }
 
-customElements.define("solar-house-card", SolarHouseCard);
+if (!customElements.get("solar-house-card")) {
+  customElements.define("solar-house-card", SolarHouseCard);
+}
 
 if (typeof window !== "undefined") {
   window.customCards = window.customCards || [];
-  window.customCards.push({
-    type: "solar-house-card",
-    name: "Solar House",
-    description: "Isometric house with solar monitoring and weather-based image variants",
-  });
+  if (!window.customCards.some((c) => c.type === "solar-house-card")) {
+    window.customCards.push({
+      type: "solar-house-card",
+      name: "Solar House",
+      description: "Isometric house with solar monitoring and weather-based image variants",
+    });
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept();
+  import.meta.hot.invalidate();
 }

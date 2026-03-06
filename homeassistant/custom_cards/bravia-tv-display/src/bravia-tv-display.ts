@@ -65,10 +65,6 @@ const DEFAULT_SCREEN: ScreenPosition = {
 
 const KNOWN_APPS: Record<string, { label: string; color: string }> = {
   "com.google.android.youtube.tv": { label: "YouTube", color: "#FF0000" },
-  "com.google.android.apps.youtube.music": {
-    label: "YouTube Music",
-    color: "#FF0000",
-  },
   "com.netflix.ninja": { label: "Netflix", color: "#E50914" },
   "com.google.android.tvlauncher": { label: "Home", color: "#4285F4" },
   "com.sony.dtv.tvx": { label: "Live TV", color: "#0077B5" },
@@ -86,7 +82,6 @@ const KNOWN_APPS: Record<string, { label: string; color: string }> = {
 
 const ICONS: Record<string, string> = {
   youtube: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
-  "youtube-music": `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.376 0 0 5.376 0 12s5.376 12 12 12 12-5.376 12-12S18.624 0 12 0zm0 19.104c-3.924 0-7.104-3.18-7.104-7.104S8.076 4.896 12 4.896s7.104 3.18 7.104 7.104-3.18 7.104-7.104 7.104zm0-13.332c-3.432 0-6.228 2.796-6.228 6.228S8.568 18.228 12 18.228 18.228 15.432 18.228 12 15.432 5.772 12 5.772zM9.684 15.54V8.46L15.816 12l-6.132 3.54z"/></svg>`,
   netflix: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596 2.344.058 4.85.398 4.854.398-2.8-7.924-5.923-16.747-8.487-24h-4.715zm8.489 0v9.63L18.6 22.951c-.043-7.86-.004-15.913.002-22.95H13.887zM5.398 1.05V24c1.873-.225 2.81-.312 4.715-.398v-9.22l-4.715-13.332z"/></svg>`,
   power: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>`,
 };
@@ -99,9 +94,11 @@ export class BraviaTvDisplay extends LitElement {
   @property({ attribute: false }) public hass!: Hass;
   @state() private _config!: BraviaDisplayConfig;
   @state() private _cacheBuster = 0;
+  @state() private _showAppBadge = false;
 
   private _screen!: ScreenPosition;
   private _refreshInterval: ReturnType<typeof setInterval> | null = null;
+  private _badgeTimeout: ReturnType<typeof setTimeout> | null = null;
   private _lastEntityPicture = "";
 
   /* ── HA card API ────────────────────────────────────────────── */
@@ -138,6 +135,7 @@ export class BraviaTvDisplay extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._stopScreenRefresh();
+    this._clearBadgeTimeout();
   }
 
   updated(changedProps: PropertyValues): void {
@@ -167,6 +165,22 @@ export class BraviaTvDisplay extends LitElement {
       this._refreshInterval = null;
     }
   }
+
+  private _clearBadgeTimeout(): void {
+    if (this._badgeTimeout) {
+      clearTimeout(this._badgeTimeout);
+      this._badgeTimeout = null;
+    }
+  }
+
+  private _onTvClick = (): void => {
+    if (!this._isOn || !this._appName) return;
+    this._clearBadgeTimeout();
+    this._showAppBadge = true;
+    this._badgeTimeout = setTimeout(() => {
+      this._showAppBadge = false;
+    }, 4000);
+  };
 
   /* ── Entity helpers ─────────────────────────────────────────── */
 
@@ -399,6 +413,48 @@ export class BraviaTvDisplay extends LitElement {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+
+    .app-badge-toast {
+      position: absolute;
+      bottom: 6%;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 350ms ease, transform 350ms ease;
+    }
+
+    .app-badge-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .app-badge-toast .toast-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .app-badge-toast .toast-label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--toast-color, #fff);
+      white-space: nowrap;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
   `;
 
   /* ── Render ─────────────────────────────────────────────────── */
@@ -424,9 +480,13 @@ export class BraviaTvDisplay extends LitElement {
       ? `${entityPic}${entityPic.includes("?") ? "&" : "?"}_cb=${this._cacheBuster}`
       : "";
 
+    const appName = this._appName;
+    const appColor = this._appColor;
+    const appIcon = this._getAppIcon();
+
     return html`
       <ha-card>
-        <div class="tv-display">
+        <div class="tv-display" @click="${this._onTvClick}">
           <img class="tv-image" src="${this._config.image}" alt="Bravia TV" />
           <div class="screen-overlay ${stateClass}" style="${screenStyle}">
             ${hasScreenCapture
@@ -446,6 +506,23 @@ export class BraviaTvDisplay extends LitElement {
                   </div>
                 `}
           </div>
+          ${this._isOn && appName
+            ? html`
+                <div
+                  class="app-badge-toast ${this._showAppBadge ? "visible" : ""}"
+                  style="--toast-color: ${appColor}"
+                >
+                  ${appIcon
+                    ? html`<span
+                        class="toast-icon"
+                        style="color: ${appColor}"
+                        .innerHTML="${appIcon}"
+                      ></span>`
+                    : nothing}
+                  <span class="toast-label">${appName}</span>
+                </div>
+              `
+            : nothing}
         </div>
       </ha-card>
     `;
@@ -519,8 +596,7 @@ export class BraviaTvDisplay extends LitElement {
 
   private _getAppIcon(): string | null {
     const appId = this._appId;
-    if (appId.includes("youtube.tv")) return ICONS.youtube;
-    if (appId.includes("youtube.music")) return ICONS["youtube-music"];
+    if (appId.includes("youtube")) return ICONS.youtube;
     if (appId.includes("netflix")) return ICONS.netflix;
     return null;
   }
@@ -539,14 +615,23 @@ declare global {
   }
 }
 
-customElements.define("bravia-tv-display", BraviaTvDisplay);
+if (!customElements.get("bravia-tv-display")) {
+  customElements.define("bravia-tv-display", BraviaTvDisplay);
+}
 
 if (typeof window !== "undefined") {
   window.customCards = window.customCards || [];
-  window.customCards.push({
-    type: "bravia-tv-display",
-    name: "Bravia TV Display",
-    description:
-      "TV illustration with live screen overlay showing what's running",
-  });
+  if (!window.customCards.some((c) => c.type === "bravia-tv-display")) {
+    window.customCards.push({
+      type: "bravia-tv-display",
+      name: "Bravia TV Display",
+      description:
+        "TV illustration with live screen overlay showing what's running",
+    });
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept();
+  import.meta.hot.invalidate();
 }

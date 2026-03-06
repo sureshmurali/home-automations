@@ -727,13 +727,22 @@ declare global {
   }
 }
 
-customElements.define("ecoone-visual-card", EcoOneVisualCard);
+if (!customElements.get("ecoone-visual-card")) {
+  customElements.define("ecoone-visual-card", EcoOneVisualCard);
+}
 
 if (typeof window !== "undefined") {
   window.customCards = window.customCards || [];
-  window.customCards.push({
-    type: "ecoone-visual-card",
-    name: "Eco One Visual",
-    description: "Premium minimal Eco One heat pump + tank visualization with SVG overlays",
-  });
+  if (!window.customCards.some((c) => c.type === "ecoone-visual-card")) {
+    window.customCards.push({
+      type: "ecoone-visual-card",
+      name: "Eco One Visual",
+      description: "Premium minimal Eco One heat pump + tank visualization with SVG overlays",
+    });
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept();
+  import.meta.hot.invalidate();
 }

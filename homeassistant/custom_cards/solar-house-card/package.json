@@ -4,9 +4,8 @@
   "description": "Home Assistant Lovelace card: isometric house with solar monitoring and weather-based image variants",
   "type": "module",
   "scripts": {
-    "build": "vite build && node -e \"const fs=require('fs'); const path=require('path'); const h=fs.readFileSync('preview.html','utf8').replace('./dist/solar-house-card.js','./solar-house-card.js'); fs.writeFileSync('dist/preview.html',h); fs.writeFileSync('dist/index.html',h); if(fs.existsSync('homeIllustration.png')) fs.copyFileSync('homeIllustration.png', path.join('dist','homeIllustration.png'));\"",
-    "preview": "npm run build && vite preview",
-    "preview:card": "npm run build && npx --yes serve -p 5000 ."
+    "build": "vite build && node -e \"const fs=require('fs'); const path=require('path'); const h=fs.readFileSync('index.html','utf8').replace('./src/solar-house-card.ts','./solar-house-card.js'); fs.writeFileSync('dist/index.html',h); if(fs.existsSync('homeIllustration.png')) fs.copyFileSync('homeIllustration.png', path.join('dist','homeIllustration.png'));\"",
+    "preview": "vite"
   },
   "dependencies": {
     "lit": "^3.2.0"

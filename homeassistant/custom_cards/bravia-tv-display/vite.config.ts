@@ -1,6 +1,10 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  server: {
+    port: 5010,
+    open: true,
+  },
   build: {
     lib: {
       entry: "src/bravia-tv-display.ts",

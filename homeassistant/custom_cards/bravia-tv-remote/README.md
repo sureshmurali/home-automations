@@ -7,7 +7,7 @@ A Home Assistant Lovelace custom card that provides a **full remote control** fo
 ## Features
 
 - **Now Playing** — displays current media title, artist, and album art
-- **App Launchers** — quick launch buttons for YouTube, Netflix, YouTube Music, and IPTV
+- **App Launchers** — quick launch buttons for YouTube, Netflix, and IPTV
 - **Power** toggle with on/off state indicator
 - **D-pad** — circular disc with directional arrows and a central OK button
 - **Navigation** — Back and Home buttons
@@ -124,9 +124,6 @@ apps:
   - name: YouTube
     icon: youtube
     package: com.google.android.youtube.tv
-  - name: YouTube Music
-    icon: youtube-music
-    package: com.google.android.apps.youtube.music
   - name: Netflix
     icon: netflix
     package: com.netflix.ninja
@@ -140,7 +137,7 @@ apps:
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
 | `entity` | string | **Yes** | — | Your Android TV `media_player` entity ID |
-| `apps` | array | No | YouTube, YouTube Music, Netflix, IPTV | List of app launcher buttons to display |
+| `apps` | array | No | YouTube, Netflix, IPTV | List of app launcher buttons to display |
 
 ### App Configuration
 
@@ -149,7 +146,7 @@ Each app in the `apps` array has the following properties:
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `name` | string | **Yes** | Display name for the app |
-| `icon` | string | **Yes** | Icon identifier (`youtube`, `youtube-music`, `netflix`, `tv`) |
+| `icon` | string | **Yes** | Icon identifier (`youtube`, `netflix`, `tv`) |
 | `package` | string | **Yes** | Android package name for the app |
 
 ## Button Reference
