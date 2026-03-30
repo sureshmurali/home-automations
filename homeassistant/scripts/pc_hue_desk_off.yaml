@@ -1,0 +1,39 @@
+# ──────────────────────────────────────────────────────────────────────
+# PC Hue desk OFF — smooth fade-out.
+#
+# Gradually dims brightness to zero over the configured duration,
+# then turns the lights off cleanly.
+# ──────────────────────────────────────────────────────────────────────
+alias: PC Hue desk off
+description: Smooth fade-out for Hue Play desk lights.
+mode: single
+max_exceeded: SILENT
+
+variables:
+
+  # ── Lights ──────────────────────────────────────────────────────────
+  pc_hue_lights:
+    - light.hue_play_1
+    - light.hue_play_2
+
+  # ── Fade-out ────────────────────────────────────────────────────────
+  # Total time the fade-out takes (seconds).
+  fadeout_duration_sec: 10
+
+sequence:
+  # Ramp brightness to 0 using the bulb's transition engine.
+  - action: light.turn_on
+    target:
+      entity_id: "{{ pc_hue_lights }}"
+    data:
+      brightness_pct: 0
+      transition: "{{ fadeout_duration_sec }}"
+
+  # Wait for the transition to finish, then send the off command
+  # so the entity state flips to "off" cleanly.
+  - delay:
+      seconds: "{{ fadeout_duration_sec }}"
+
+  - action: light.turn_off
+    target:
+      entity_id: "{{ pc_hue_lights }}"

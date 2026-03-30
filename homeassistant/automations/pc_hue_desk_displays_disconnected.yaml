@@ -1,0 +1,20 @@
+# PC desk Hue Play — fade out when neither Mac has an external display.
+# Requires: script.pc_hue_desk_off (scripts/pc_hue_desk_off.yaml)
+alias: PC desk - Hue off when no external display
+description: ""
+mode: single
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.macbook_akqa_displays
+      - sensor.personal_macbook_displays
+conditions:
+  - condition: template
+    value_template: >-
+      {{ states('sensor.macbook_akqa_displays') | int(0) <= 1
+         and states('sensor.personal_macbook_displays') | int(0) <= 1 }}
+  - condition: state
+    entity_id: light.hue_play_1
+    state: "on"
+actions:
+  - action: script.pc_hue_desk_off

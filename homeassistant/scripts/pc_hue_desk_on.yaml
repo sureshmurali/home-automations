@@ -1,0 +1,78 @@
+# ──────────────────────────────────────────────────────────────────────
+# PC Hue desk ON — randomised light dance then settle to warm white.
+#
+# Each step picks a random hue (0–360) so the dance feels different
+# every time. The Hue bulb's built-in transition engine blends
+# smoothly between colours.
+#
+# All timings, colours, and brightness are in the variables section
+# so you can tune the feel without touching the sequence.
+# ──────────────────────────────────────────────────────────────────────
+alias: PC Hue desk on
+description: Randomised rainbow light dance then warm white for desk work.
+mode: single
+max_exceeded: SILENT
+
+variables:
+
+  # ── Lights ──────────────────────────────────────────────────────────
+  # Entity IDs of the Hue Play bars behind the monitor.
+  pc_hue_lights:
+    - light.hue_play_1
+    - light.hue_play_2
+
+  # ── Light dance ─────────────────────────────────────────────────────
+  # Total time the rainbow animation should run (seconds).
+  dance_duration_sec: 4
+
+  # Number of random colour jumps during the dance.
+  # More steps = more colours shown; each step gets an equal share
+  # of dance_duration_sec as its transition time.
+  dance_steps: 16
+
+  # Saturation for the dance colours (0–100). Lower = more pastel.
+  dance_saturation: 100
+
+  # Brightness during the dance (0–100).
+  dance_brightness_pct: 100
+
+  # ── Final warm colour ──────────────────────────────────────────────
+  # Transition time from the last dance colour to the warm working colour.
+  warm_transition_sec: 2
+
+  # Colour temperature in Kelvin (lower = warmer).
+  # 2200 = candle, 2700 = soft white, 4000 = neutral.
+  warm_kelvin: 2500
+
+  # Brightness for the working state (0–100).
+  warm_brightness_pct: 85
+
+sequence:
+  # ── Randomised colour dance ────────────────────────────────────────
+  # Each iteration picks a random hue on the 0–360 wheel, covering
+  # every possible colour the bulb can produce. The transition engine
+  # blends between each random pick, creating a fluid light show
+  # that's unique every time.
+  - repeat:
+      count: "{{ dance_steps }}"
+      sequence:
+        - action: light.turn_on
+          target:
+            entity_id: "{{ pc_hue_lights }}"
+          data:
+            hs_color:
+              - "{{ range(0, 360) | random }}"
+              - "{{ dance_saturation }}"
+            brightness_pct: "{{ dance_brightness_pct }}"
+            transition: "{{ dance_duration_sec / dance_steps }}"
+        - delay:
+            seconds: "{{ dance_duration_sec / dance_steps }}"
+
+  # ── Settle to warm white ───────────────────────────────────────────
+  - action: light.turn_on
+    target:
+      entity_id: "{{ pc_hue_lights }}"
+    data:
+      color_temp_kelvin: "{{ warm_kelvin }}"
+      brightness_pct: "{{ warm_brightness_pct }}"
+      transition: "{{ warm_transition_sec }}"

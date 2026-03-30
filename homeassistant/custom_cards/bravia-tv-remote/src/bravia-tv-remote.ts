@@ -95,6 +95,7 @@ const ICONS: Record<string, string> = {
   youtube: `<svg viewBox="0 0 90 20" fill="currentColor"><path d="M27.9727 3.12324C27.6435 1.89323 26.6768 0.926623 25.4468 0.597366C23.2197 0 14.285 0 14.285 0C14.285 0 5.35042 0 3.12323 0.597366C1.89323 0.926623 0.926623 1.89323 0.597366 3.12324C0 5.35042 0 10 0 10C0 10 0 14.6496 0.597366 16.8768C0.926623 18.1068 1.89323 19.0734 3.12323 19.4026C5.35042 20 14.285 20 14.285 20C14.285 20 23.2197 20 25.4468 19.4026C26.6768 19.0734 27.6435 18.1068 27.9727 16.8768C28.5701 14.6496 28.5701 10 28.5701 10C28.5701 10 28.5677 5.35042 27.9727 3.12324Z" fill="#FF0000"/><path d="M11.4253 14.2854L18.8477 10.0004L11.4253 5.71533V14.2854Z" fill="white"/><g><path d="M34.6024 13.0036L31.3945 1.41846H34.1932L35.3174 6.6701C35.6043 7.96361 35.8136 9.06662 35.95 9.97913H36.0323C36.1264 9.32532 36.3381 8.22937 36.665 6.68892L37.8291 1.41846H40.6278L37.3799 13.0036V18.561H34.6001V13.0036H34.6024Z"/><path d="M41.4697 18.1937C40.9053 17.8127 40.5031 17.22 40.2632 16.4157C40.0257 15.6114 39.9058 14.5437 39.9058 13.2078V11.3898C39.9058 10.0422 40.0422 8.95805 40.315 8.14196C40.5878 7.32588 41.0135 6.72851 41.592 6.35457C42.1706 5.98063 42.9302 5.79248 43.871 5.79248C44.7976 5.79248 45.5384 5.98298 46.0981 6.36398C46.6555 6.74497 47.0508 7.34234 47.2765 8.15137C47.5023 8.96275 47.6176 10.0422 47.6176 11.3898V13.2078C47.6176 14.5437 47.5023 15.6161 47.2765 16.4251C47.0508 17.2365 46.6508 17.8292 46.0787 18.2031C45.5066 18.5771 44.7764 18.7652 43.8874 18.7652C42.9514 18.7675 42.1847 18.5747 41.4697 18.1937ZM44.6353 16.2323C44.7905 15.8231 44.8705 15.1575 44.8705 14.2309V10.3292C44.8705 9.43077 44.7929 8.77225 44.6353 8.35833C44.4777 7.94206 44.2026 7.7351 43.8074 7.7351C43.4265 7.7351 43.156 7.94206 42.9914 8.35833C42.8268 8.77461 42.7445 9.43077 42.7445 10.3292V14.2309C42.7445 15.1575 42.8268 15.8254 42.9914 16.2323C43.156 16.6415 43.4382 16.8461 43.8074 16.8461C44.1767 16.8461 44.4777 16.6415 44.6353 16.2323Z"/><path d="M56.8154 18.5634H54.6094L54.3648 17.03H54.3037C53.7039 18.1871 52.8055 18.7656 51.6061 18.7656C50.7759 18.7656 50.1621 18.4928 49.767 17.9496C49.3719 17.4039 49.1743 16.5526 49.1743 15.3955V6.03751H51.9942V15.2308C51.9942 15.7906 52.0553 16.188 52.1776 16.4256C52.2999 16.6631 52.5045 16.783 52.7914 16.783C53.036 16.783 53.2712 16.7078 53.497 16.5573C53.7228 16.4067 53.8874 16.2162 53.9979 15.9858V6.03516H56.8154V18.5634Z"/><path d="M64.4755 3.68758H61.6768V18.5629H58.9181V3.68758H56.1194V1.42041H64.4755V3.68758Z"/><path d="M71.2768 18.5634H69.0708L68.8262 17.03H68.7651C68.1654 18.1871 67.267 18.7656 66.0675 18.7656C65.2373 18.7656 64.6235 18.4928 64.2284 17.9496C63.8333 17.4039 63.6357 16.5526 63.6357 15.3955V6.03751H66.4556V15.2308C66.4556 15.7906 66.5167 16.188 66.639 16.4256C66.7613 16.6631 66.9659 16.783 67.2529 16.783C67.4974 16.783 67.7326 16.7078 67.9584 16.5573C68.1842 16.4067 68.3488 16.2162 68.4593 15.9858V6.03516H71.2768V18.5634Z"/><path d="M80.609 8.0387C80.4373 7.24849 80.1621 6.67699 79.7812 6.32186C79.4002 5.96674 78.8757 5.79035 78.2078 5.79035C77.6904 5.79035 77.2059 5.93616 76.7567 6.23014C76.3075 6.52412 75.9594 6.90747 75.7148 7.38489H75.6937V0.785645H72.9773V18.5608H75.3056L75.5925 17.3755H75.6537C75.8724 17.7988 76.1993 18.1304 76.6344 18.3774C77.0695 18.622 77.554 18.7443 78.0855 18.7443C79.038 18.7443 79.7412 18.3045 80.1904 17.4272C80.6396 16.5476 80.8653 15.1765 80.8653 13.3092V11.3266C80.8653 9.92722 80.7783 8.82892 80.609 8.0387ZM78.0243 13.1492C78.0243 14.0617 77.9867 14.7767 77.9114 15.2941C77.8362 15.8115 77.7115 16.1808 77.5328 16.3971C77.3564 16.6158 77.1165 16.724 76.8178 16.724C76.585 16.724 76.371 16.6699 76.1734 16.5594C75.9759 16.4512 75.816 16.2866 75.6937 16.0702V8.96062C75.7877 8.6196 75.9524 8.34209 76.1852 8.12337C76.4157 7.90465 76.6697 7.79646 76.9401 7.79646C77.2271 7.79646 77.4481 7.90935 77.6034 8.13278C77.7609 8.35855 77.8691 8.73485 77.9303 9.26636C77.9914 9.79787 78.022 10.5528 78.022 11.5335V13.1492H78.0243Z"/></g></svg>`,
   netflix: `<svg viewBox="0 0 111 30" fill="currentColor"><path d="M105.062 14.28L111 30c-1.75-.25-3.499-.563-5.28-.845l-3.345-8.686-3.437 8.31c-1.812-.28-3.624-.436-5.405-.625l6.062-13.5L93.5 0h5.28l3.062 7.874L105 0h5.343l-5.28 14.28zM90.311 0h-4.968v27.25c1.687.094 3.374.156 5.125.156V0zm-14.406 0h-4.968v24.938c1.687.094 3.374.156 5.125.156V0zM70.999 0h-4.969v22.625c1.688.094 3.375.156 5.125.156V0zM56.124 0h-4.969v20.313c1.688.093 3.375.155 5.125.155V0zM41.062 0h-4.969v17.969c1.688.094 3.375.156 5.125.156V0zM24.999 0h-4.969v15.656c1.688.094 3.375.156 5.125.156V0zM10.937 0H6v13.344c1.688.093 3.375.155 5.125.155V0z"/></svg>`,
   tv: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="13" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>`,
+  yen: `<svg width="36" height="44" viewBox="0 0 5 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.18488 2.03001H0.298626C0.251126 2.03001 0.213626 2.06876 0.213626 2.11626V2.70376C0.213626 2.75126 0.252376 2.79001 0.298626 2.79001H1.65613V3.16251H0.299876C0.252376 3.16251 0.214876 3.20126 0.214876 3.24876V3.83626C0.214876 3.88501 0.253626 3.92251 0.299876 3.92251H1.65738V4.92001C1.65738 4.98001 1.70613 5.02751 1.76488 5.02751H2.82738C2.88613 5.02751 2.93488 4.97876 2.93488 4.92001V3.92251H4.28238C4.33113 3.92251 4.36988 3.88376 4.36988 3.83626V3.24876C4.36988 3.20126 4.33113 3.16251 4.28238 3.16251H2.93488V2.79001H4.28238C4.33113 2.79001 4.36988 2.75126 4.36988 2.70376V2.11626C4.36988 2.06876 4.33113 2.03001 4.28238 2.03001H3.40613L4.57363 0.167514C4.59488 0.133764 4.59613 0.0912643 4.57738 0.0562643C4.56801 0.0389851 4.55408 0.0246048 4.53711 0.0146874C4.52014 0.00477002 4.50078 -0.000304935 4.48113 1.41729e-05H3.48363C3.44738 1.41729e-05 3.41238 0.0187644 3.39238 0.0500144L2.29613 1.73251L1.20113 0.0500144C1.19111 0.0346204 1.17739 0.0219796 1.16124 0.0132459C1.14508 0.00451221 1.12699 -3.66332e-05 1.10863 1.41729e-05H0.109876C0.0698757 1.41729e-05 0.0336257 0.0225143 0.0136257 0.0562643C-0.00512429 0.0912643 -0.0051242 0.133764 0.0173758 0.167514L1.18488 2.03001Z" fill="currentColor"/></svg>`,
 };
 
 const APP_IMAGES: Record<string, string> = {
@@ -111,6 +112,7 @@ export class BraviaTvRemote extends LitElement {
   @property({ attribute: false }) public hass!: Hass;
   @state() private _config!: BraviaRemoteConfig;
   private _apps!: AppConfig[];
+  @state() private _showIndicator = false;
 
   /* ── HA card API ────────────────────────────────────────────── */
 
@@ -179,6 +181,7 @@ export class BraviaTvRemote extends LitElement {
   }
 
   private _togglePower(): void {
+    this._showFeedback();
     if (this._isOn) {
       this._callService("media_player", "turn_off");
     } else {
@@ -187,24 +190,29 @@ export class BraviaTvRemote extends LitElement {
   }
 
   private _playPause(): void {
+    this._showFeedback();
     this._callService("media_player", "media_play_pause");
   }
 
   private _volumeUp(): void {
+    this._showFeedback();
     this._callService("media_player", "volume_up");
   }
 
   private _volumeDown(): void {
+    this._showFeedback();
     this._callService("media_player", "volume_down");
   }
 
   private _volumeMute(): void {
+    this._showFeedback();
     this._callService("media_player", "volume_mute", {
       is_volume_muted: !this._isMuted,
     });
   }
 
   private _sendKey(key: string): void {
+    this._showFeedback();
     this._callService("androidtv", "adb_command", {
       command: `input keyevent ${key}`,
     });
@@ -230,6 +238,7 @@ export class BraviaTvRemote extends LitElement {
   private _quickSettings(): void { this._sendKey("KEYCODE_MENU"); }
 
   private _launchApp(pkg: string): void {
+    this._showFeedback();
     this._callService("androidtv", "adb_command", {
       command: `monkey -p ${pkg} -c android.intent.category.LAUNCHER 1`,
     });
@@ -243,6 +252,40 @@ export class BraviaTvRemote extends LitElement {
 
   private _boundPointerDown = this._onDpadPointerDown.bind(this);
   private _boundPointerUp = this._onDpadPointerUp.bind(this);
+  private _audioContext: AudioContext | null = null;
+
+  private _playClickSound(): void {
+    try {
+      if (!this._audioContext) {
+        this._audioContext = new AudioContext();
+      }
+      const ctx = this._audioContext;
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.1);
+    } catch (e) {
+      console.warn('Audio feedback not available:', e);
+    }
+  }
+
+  private _showFeedback(): void {
+    this._playClickSound();
+    this._showIndicator = true;
+    setTimeout(() => {
+      this._showIndicator = false;
+    }, 800);
+  }
 
   firstUpdated(): void {
     const disc = this.shadowRoot!.querySelector<HTMLElement>('.dpad-disc');
@@ -361,10 +404,44 @@ export class BraviaTvRemote extends LitElement {
     }
 
     ha-card {
-      background: #1a1a2e;
+      background: transparent;
       border: none;
       box-shadow: none;
       padding: 24px 0;
+      position: relative;
+    }
+
+    /* ── Feedback Indicator ──────────────────── */
+
+    .feedback-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #4caf50;
+      box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 1000;
+    }
+
+    .feedback-indicator.active {
+      opacity: 1;
+      animation: pulse 0.8s ease-out;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(76, 175, 80, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+      }
     }
 
     /* ── App launchers ───────────────────────── */
@@ -611,6 +688,9 @@ export class BraviaTvRemote extends LitElement {
 
     return html`
       <ha-card>
+        <!-- Feedback Indicator -->
+        <div class="feedback-indicator ${this._showIndicator ? 'active' : ''}"></div>
+
         <div class="remote-body">
 
           <!-- Power button -->
@@ -651,7 +731,7 @@ export class BraviaTvRemote extends LitElement {
               <button class="dpad-arrow left" @click="${() => this._animateDpadArrow('left')}">
                 <span .innerHTML="${ICONS.left}"></span>
               </button>
-              <button class="dpad-ok" @click="${this._animateOk}">OK</button>
+              <button class="dpad-ok" @click="${this._animateOk}"><span .innerHTML="${ICONS.yen}"></span></button>
               <button class="dpad-arrow right" @click="${() => this._animateDpadArrow('right')}">
                 <span .innerHTML="${ICONS.right}"></span>
               </button>
