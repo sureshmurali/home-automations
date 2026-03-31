@@ -1,0 +1,10 @@
+{
+  "name": "ha-themes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Home Assistant themes deploy helper",
+  "scripts": {
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:clean": "DEPLOY_CLEAN=1 bash scripts/deploy.sh"
+  }
+}

@@ -16,6 +16,8 @@ SSH_USER="${SSH_USER:-sureshmurali}"
 REMOTE_PATH="${REMOTE_PATH:-/home/sureshmurali/homeassistant/config/www}"
 
 SSH_TARGET="${SSH_USER}@${SSH_HOST}"
+CLEAN_DEPLOY="${DEPLOY_CLEAN:-0}"
+START_TS="$(date +%s)"
 
 # ── SSH / rsync command builder ────────────────────────────────────────
 build_ssh_cmd() {
@@ -36,14 +38,31 @@ build_ssh_cmd() {
 
 SSH_PREFIX=$(build_ssh_cmd)
 
+log_info() {
+  echo "ℹ️  $*"
+}
+
+log_ok() {
+  echo "✅ $*"
+}
+
+log_warn() {
+  echo "⚠️  $*"
+}
+
+log_step() {
+  echo "🔹 $*"
+}
+
 do_rsync() {
   local src="$1" dest="$2"
+  # No --chmod: macOS bundled rsync is too old and rejects GNU-style D755,F644.
   if [[ -n "$SSH_PREFIX" ]]; then
-    SSHPASS="${SSH_PASS}" $SSH_PREFIX rsync -avz --chmod=D755,F644 \
+    SSHPASS="${SSH_PASS}" $SSH_PREFIX rsync -avz \
       -e "ssh -o StrictHostKeyChecking=no" \
       "$src" "${SSH_TARGET}:${dest}"
   else
-    rsync -avz --chmod=D755,F644 \
+    rsync -avz \
       -e "ssh -o StrictHostKeyChecking=no" \
       "$src" "${SSH_TARGET}:${dest}"
   fi
@@ -70,11 +89,21 @@ CARDS=(
 FILTER="${1:-}"
 
 echo ""
-echo "╔══════════════════════════════════════════════════════╗"
-echo "║  HA Custom Cards Deploy → ${SSH_TARGET}             ║"
-echo "╠══════════════════════════════════════════════════════╣"
-echo "║  Remote: ${REMOTE_PATH}                             ║"
-echo "╚══════════════════════════════════════════════════════╝"
+echo "🚀 =============================================== 🚀"
+echo "   _   _    _       ____            _           "
+echo "  | | | |  / \\     |  _ \\ ___ _ __ | | ___  _   _ "
+echo "  | |_| | / _ \\    | | | / _ \\ '_ \\| |/ _ \\| | | |"
+echo "  |  _  |/ ___ \\   | |_| |  __/ |_) | | (_) | |_| |"
+echo "  |_| |_/_/   \\_\\  |____/ \\___| .__/|_|\\___/ \\__, |"
+echo "                               |_|            |___/ "
+echo "🛰️  Target : ${SSH_TARGET}"
+echo "📂 Remote : ${REMOTE_PATH}"
+if [[ "$CLEAN_DEPLOY" == "1" ]]; then
+  echo "🧹 Mode   : CLEAN (delete remote card folders, then upload fresh)"
+else
+  echo "🔁 Mode   : SYNC  (overwrite matching files, keep unknown files)"
+fi
+echo "🚀 =============================================== 🚀"
 echo ""
 
 deployed=0
@@ -90,18 +119,21 @@ for entry in "${CARDS[@]}"; do
   js_path="${dist_dir}/${js_file}"
 
   if [[ ! -f "$js_path" ]]; then
-    echo "⏭  ${card_dir} — no build found (${js_file} missing), skipping"
+    log_warn "${card_dir} — no build found (${js_file} missing), skipping"
     continue
   fi
 
-  echo "📦 ${card_dir}"
+  log_step "Deploying ${card_dir}"
 
-  # Create remote subdirectory
   remote_card_dir="${REMOTE_PATH}/${card_dir}"
-  do_ssh "mkdir -p '${remote_card_dir}'"
+  if [[ "$CLEAN_DEPLOY" == "1" ]]; then
+    log_info "Cleaning remote folder: ${remote_card_dir}"
+    do_ssh "rm -rf '${remote_card_dir}' && mkdir -p '${remote_card_dir}'"
+  else
+    do_ssh "mkdir -p '${remote_card_dir}'"
+  fi
 
-  # Deploy JS (skip .map files)
-  echo "   ↳ ${js_file}"
+  log_info "Uploading JS: ${js_file}"
   do_rsync "${js_path}" "${remote_card_dir}/"
 
   # Deploy assets from the card's root directory
@@ -109,16 +141,17 @@ for entry in "${CARDS[@]}"; do
     for asset in $assets; do
       asset_path="${ROOT_DIR}/${card_dir}/${asset}"
       if [[ -f "$asset_path" ]]; then
-        echo "   ↳ ${asset}"
+        log_info "Uploading asset: ${asset}"
         do_rsync "${asset_path}" "${remote_card_dir}/"
       else
-        echo "   ⚠ ${asset} not found, skipping"
+        log_warn "${card_dir}/${asset} not found, skipping"
       fi
     done
   fi
 
   deployed=$((deployed + 1))
-  echo ""
+  log_ok "${card_dir} complete"
+  echo "-------------------------------------------------------"
 done
 
 if [[ $deployed -eq 0 ]]; then
@@ -126,7 +159,11 @@ if [[ $deployed -eq 0 ]]; then
   exit 1
 fi
 
-echo "✅ Deployed ${deployed} card(s) to ${SSH_TARGET}:${REMOTE_PATH}"
+END_TS="$(date +%s)"
+ELAPSED="$((END_TS - START_TS))"
+
+log_ok "Deployed ${deployed} card(s) to ${SSH_TARGET}:${REMOTE_PATH}"
+log_info "Total time: ${ELAPSED}s"
 echo ""
 echo "📝 Lovelace resource paths (add in HA → Settings → Dashboards → Resources):"
 for entry in "${CARDS[@]}"; do
