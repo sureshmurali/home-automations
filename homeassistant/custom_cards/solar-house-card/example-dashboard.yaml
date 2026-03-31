@@ -3,7 +3,7 @@
 # Setup:
 #   1. npm install && npm run build
 #   2. Copy dist/solar-house-card.js → config/www/solar-house-card.js
-#   3. Copy homeIllustration.png    → config/www/homeIllustration.png
+#   3. Copy home.png    → config/www/home.png
 #   4. Add resource: /local/solar-house-card.js (JavaScript Module)
 #   5. Add this card via Manual/Code editor
 
@@ -11,7 +11,7 @@ type: custom:solar-house-card
 
 # --- Background ---
 # Single image:
-image: /local/homeIllustration.png
+image: /local/home.png
 
 # Or weather/time variants (use instead of `image`):
 # images:

@@ -30,7 +30,7 @@ This produces `dist/solar-house-card.js`.
 config/
   www/
     solar-house-card.js      ← from dist/
-    homeIllustration.png      ← your isometric house image
+    home.png      ← your isometric house image
 ```
 
 ### 3. Add as a Lovelace resource
@@ -48,7 +48,7 @@ Open your dashboard, click **Edit → Add Card → Manual**, and paste:
 
 ```yaml
 type: custom:solar-house-card
-image: /local/homeIllustration.png
+image: /local/home.png
 battery_entity: sensor.solar_31_remaining_stored_electricity_3
 solar_power_entity: sensor.solar_31_current_power
 grid_entity: sensor.grid_power
@@ -71,7 +71,7 @@ Open **http://localhost:4173/**. You can also set `preview: true` in the card YA
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `image` | string | No* | — | Single background image URL (e.g. `/local/homeIllustration.png`) |
+| `image` | string | No* | — | Single background image URL (e.g. `/local/home.png`) |
 | `images` | object | No* | — | Map of variant key → URL for weather/time-based backgrounds |
 | `weather_entity` | string | No | — | Weather entity (e.g. `weather.home`) to auto-select from `images` |
 | `battery_entity` | string | **Yes** | — | Battery level entity (%). Drives flow line visibility and speed |
@@ -143,7 +143,7 @@ Supported weather state mappings: `sunny`, `clear-day` → sunny; `rainy`, `pour
 type: custom:solar-house-card
 
 # Background
-image: /local/homeIllustration.png
+image: /local/home.png
 
 # Entities
 battery_entity: sensor.solar_31_remaining_stored_electricity_3
@@ -190,7 +190,7 @@ solar-house-card/
     solar-house-card.js   ← Built bundle (after npm run build)
   preview.html            ← Browser preview page
   example-dashboard.yaml  ← Full example card config
-  homeIllustration.png    ← Isometric house image
+  home.png    ← Isometric house image
 ```
 
 No changes to your existing automations or scripts are required — the card only reads entity state.
