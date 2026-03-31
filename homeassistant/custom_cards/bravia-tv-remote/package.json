@@ -4,7 +4,7 @@
   "description": "Home Assistant Lovelace card: Full Sony Bravia remote control with ADB",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs');const p=require('path');if(fs.existsSync('assets'))fs.cpSync('assets',p.join('dist','assets'),{recursive:true});\"",
     "dev": "vite",
     "preview": "vite"
   },

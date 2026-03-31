@@ -62,7 +62,7 @@
       netflix: { state:'playing', attributes:{ app_id:'com.netflix.ninja', app_name:'Netflix', media_title:'Stranger Things', media_artist:'', entity_picture:SC('netflix') }},
     };
     let current = 'youtube';
-    card.setConfig({ entity: ENTITY, image: './bravia-tv.png' });
+    card.setConfig({ entity: ENTITY, image: './assets/bravia-tv.png' });
     function refresh() {
       const p = presets[current];
       card.hass = { states: { [ENTITY]: p }, callService: (d,s,x) => console.log(`[HA] ${d}.${s}`, x) };

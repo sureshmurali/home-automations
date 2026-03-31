@@ -4,7 +4,7 @@
   "description": "Home Assistant Lovelace card: TV illustration with live ADB screenshot overlay",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs');const p=require('path');if(fs.existsSync('assets'))fs.cpSync('assets',p.join('dist','assets'),{recursive:true});\"",
     "preview": "vite"
   },
   "dependencies": {

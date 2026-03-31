@@ -2,8 +2,9 @@
 #
 # Setup:
 #   1. cd homeassistant/custom_cards/bravia-tv-remote && npm install && npm run build
-#   2. Copy dist/bravia-tv-remote.js → config/www/bravia-tv-remote.js
-#   3. Add resource: /local/bravia-tv-remote.js (JavaScript Module)
+#   2. Copy dist/bravia-tv-remote.js → config/www/bravia-tv-remote/bravia-tv-remote.js
+#      Copy dist/assets/ → config/www/bravia-tv-remote/assets/
+#   3. Add resource: /local/bravia-tv-remote/bravia-tv-remote.js (JavaScript Module)
 #   4. Add this card via Manual/Code editor
 
 type: custom:bravia-tv-remote

@@ -603,7 +603,7 @@ const zt = {
   static getStubConfig() {
     return {
       entity: "media_player.android_tv_192_168_11_26",
-      image: "/local/bravia-tv.png"
+      image: "/local/bravia-tv-display/assets/bravia-tv.png"
     };
   }
   setConfig(t) {

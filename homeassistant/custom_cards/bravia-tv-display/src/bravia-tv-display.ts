@@ -8,7 +8,7 @@
  *
  *   type: custom:bravia-tv-display
  *   entity: media_player.android_tv_192_168_11_26
- *   image: /local/bravia-tv.png
+ *   image: /local/bravia-tv-display/assets/bravia-tv.png
  *   screen_position:
  *     top: 39.63
  *     left: 29.65
@@ -106,7 +106,7 @@ export class BraviaTvDisplay extends LitElement {
   public static getStubConfig(): Partial<BraviaDisplayConfig> {
     return {
       entity: "media_player.android_tv_192_168_11_26",
-      image: "/local/bravia-tv.png",
+      image: "/local/bravia-tv-display/assets/bravia-tv.png",
     };
   }
 

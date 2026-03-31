@@ -2,6 +2,39 @@
 
 Custom Home Assistant Lovelace card that renders an isometric house illustration with real-time solar monitoring overlays — battery level, solar production, and grid usage. Features animated electric flow lines whose speed reflects battery charge, weather-based background images, and fully configurable label positions.
 
+## Configuration
+
+Put artwork in **`assets/`** (e.g. `assets/home.png`); deploy syncs that folder to `config/www/solar-house-card/assets/`.
+
+```yaml
+type: custom:solar-house-card
+# 🖼️ House illustration (deployed under assets/)
+image: /local/solar-house-card/assets/home.png
+battery_entity: sensor.solar_31_remaining_stored_electricity_3
+solar_power_entity: sensor.solar_31_current_power
+grid_entity: sensor.grid_power
+show_flow_line: true
+```
+
+\* Provide either `image` or `images` (with at least a `default` key). Weather variants should live under `assets/` on disk and use `/local/solar-house-card/assets/...` in YAML.
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| 🖼️ `image` | string | No* | — | Single background image URL (e.g. `/local/solar-house-card/assets/home.png`) |
+| 🖼️ `images` | object | No* | — | Map of variant key → URL for weather/time-based backgrounds |
+| `weather_entity` | string | No | — | Weather entity (e.g. `weather.home`) to auto-select from `images` |
+| `battery_entity` | string | **Yes** | — | Battery level entity (%). Drives flow line visibility and speed |
+| `solar_power_entity` | string | No | — | Current solar power (W). Shown in Solar overlay |
+| `grid_entity` | string | No | — | Grid import/export entity. Shown in Grid overlay |
+| `show_flow_line` | boolean | No | `true` | Show/hide animated flow lines |
+| `flow_line_color` | string | No | `#FFF2AF` | Color of the flow line cables |
+| `flow_line_scale` | number | No | `1` | Scale factor for the flow path SVG (1 = native Figma size) |
+| `flow_animation_duration` | number | No | dynamic | Seconds per glow sweep. Auto-calculated from battery %: 8s at 1%, 3s at 100%. Set to override |
+| `flow_animation_delay` | number | No | half of duration | Delay before the second staggered pulse starts |
+| `flow_glow_radius` | number | No | `5` | Glow blur radius (pulse glow is auto 2× this value) |
+| `positions` | object | No | see below | Override overlay label positions |
+| `preview` | boolean | No | `false` | Use hardcoded test data for layout previewing |
+
 ## Features
 
 - Isometric house illustration as the card background
@@ -29,8 +62,10 @@ This produces `dist/solar-house-card.js`.
 ```
 config/
   www/
-    solar-house-card.js      ← from dist/
-    home.png      ← your isometric house image
+    solar-house-card/
+      solar-house-card.js   ← from dist/
+      assets/
+        🖼️  home.png        ← your isometric house image
 ```
 
 ### 3. Add as a Lovelace resource
@@ -39,21 +74,12 @@ Go to **Settings → Dashboards → Resources → Add resource**:
 
 | Field | Value |
 |-------|-------|
-| URL   | `/local/solar-house-card.js` |
+| URL   | `/local/solar-house-card/solar-house-card.js` |
 | Type  | **JavaScript Module** |
 
 ### 4. Add the card to your dashboard
 
-Open your dashboard, click **Edit → Add Card → Manual**, and paste:
-
-```yaml
-type: custom:solar-house-card
-image: /local/home.png
-battery_entity: sensor.solar_31_remaining_stored_electricity_3
-solar_power_entity: sensor.solar_31_current_power
-grid_entity: sensor.grid_power
-show_flow_line: true
-```
+Open your dashboard, click **Edit → Add Card → Manual**, and paste the YAML from **Configuration** above (adjust entity IDs).
 
 That's it — the card will appear with your house image, live data, and animated flow lines.
 
@@ -66,27 +92,6 @@ npm run preview
 ```
 
 Open **http://localhost:4173/**. You can also set `preview: true` in the card YAML to use test data inside Home Assistant.
-
-## Configuration reference
-
-| Option | Type | Required | Default | Description |
-|--------|------|----------|---------|-------------|
-| `image` | string | No* | — | Single background image URL (e.g. `/local/home.png`) |
-| `images` | object | No* | — | Map of variant key → URL for weather/time-based backgrounds |
-| `weather_entity` | string | No | — | Weather entity (e.g. `weather.home`) to auto-select from `images` |
-| `battery_entity` | string | **Yes** | — | Battery level entity (%). Drives flow line visibility and speed |
-| `solar_power_entity` | string | No | — | Current solar power (W). Shown in Solar overlay |
-| `grid_entity` | string | No | — | Grid import/export entity. Shown in Grid overlay |
-| `show_flow_line` | boolean | No | `true` | Show/hide animated flow lines |
-| `flow_line_color` | string | No | `#FFF2AF` | Color of the flow line cables |
-| `flow_line_scale` | number | No | `1` | Scale factor for the flow path SVG (1 = native Figma size) |
-| `flow_animation_duration` | number | No | dynamic | Seconds per glow sweep. Auto-calculated from battery %: 8s at 1%, 3s at 100%. Set to override |
-| `flow_animation_delay` | number | No | half of duration | Delay before the second staggered pulse starts |
-| `flow_glow_radius` | number | No | `5` | Glow blur radius (pulse glow is auto 2× this value) |
-| `positions` | object | No | see below | Override overlay label positions |
-| `preview` | boolean | No | `false` | Use hardcoded test data for layout previewing |
-
-\* Provide either `image` or `images` (with at least a `default` key).
 
 ### Overlay positions
 
@@ -122,14 +127,15 @@ Two staggered glow pulses travel down the cables for a continuous electricity-fl
 Set `images` with variant keys and `weather_entity` to auto-switch:
 
 ```yaml
+# 🖼️ Weather / time-of-day backgrounds (optional — add files under assets/)
 images:
-  default: /local/solar-house-default.png
-  sunny: /local/solar-house-sunny.png
-  rainy: /local/solar-house-rainy.png
-  drizzle: /local/solar-house-drizzle.png
-  night: /local/solar-house-night.png
-  day: /local/solar-house-day.png
-  noon: /local/solar-house-noon.png
+  default: /local/solar-house-card/assets/solar-house-default.png
+  sunny: /local/solar-house-card/assets/solar-house-sunny.png
+  rainy: /local/solar-house-card/assets/solar-house-rainy.png
+  drizzle: /local/solar-house-card/assets/solar-house-drizzle.png
+  night: /local/solar-house-card/assets/solar-house-night.png
+  day: /local/solar-house-card/assets/solar-house-day.png
+  noon: /local/solar-house-card/assets/solar-house-noon.png
 weather_entity: weather.home
 ```
 
@@ -142,8 +148,8 @@ Supported weather state mappings: `sunny`, `clear-day` → sunny; `rainy`, `pour
 ```yaml
 type: custom:solar-house-card
 
-# Background
-image: /local/home.png
+# 🖼️ Background
+image: /local/solar-house-card/assets/home.png
 
 # Entities
 battery_entity: sensor.solar_31_remaining_stored_electricity_3
@@ -190,7 +196,8 @@ solar-house-card/
     solar-house-card.js   ← Built bundle (after npm run build)
   preview.html            ← Browser preview page
   example-dashboard.yaml  ← Full example card config
-  home.png    ← Isometric house image
+  assets/
+    🖼️  home.png          ← Isometric house image
 ```
 
 No changes to your existing automations or scripts are required — the card only reads entity state.

@@ -4,6 +4,24 @@ A Home Assistant Lovelace custom card that renders your TV photo with a **live A
 
 ![card-type](https://img.shields.io/badge/card-custom-blue) ![ha](https://img.shields.io/badge/home--assistant-custom--card-41BDF5)
 
+## Configuration
+
+TV artwork lives in **`assets/bravia-tv.png`** in this repo; deploy copies `assets/` to `config/www/bravia-tv-display/assets/` on the host.
+
+```yaml
+type: custom:bravia-tv-display
+entity: media_player.android_tv_192_168_11_26
+# 🖼️ TV background photo (must match deployed assets/)
+image: /local/bravia-tv-display/assets/bravia-tv.png
+```
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `entity` | string | **Yes** | — | Your Android TV `media_player` entity ID |
+| 🖼️ `image` | string | **Yes** | — | Path to the TV photo (e.g. `/local/bravia-tv-display/assets/bravia-tv.png`) |
+| `screen_position` | object | No | *(see below)* | Position of the screen overlay on the TV photo |
+| `screen_refresh` | number | No | `10` | Seconds between screenshot refreshes |
+
 ## Features
 
 - Displays your actual TV photo as the card background
@@ -29,49 +47,29 @@ A Home Assistant Lovelace custom card that renders your TV photo with a **live A
    npm run build
    ```
 
-2. Copy the built file to Home Assistant:
+2. Copy the built file and your TV photo to Home Assistant:
 
    ```
-   dist/bravia-tv-display.js  →  config/www/bravia-tv-display.js
+   dist/bravia-tv-display.js  →  config/www/bravia-tv-display/bravia-tv-display.js
+   🖼️  assets/*                →  config/www/bravia-tv-display/assets/
    ```
 
-3. Copy your TV photo:
+   Or deploy from `homeassistant/custom_cards` with `npm run deploy` (syncs each card’s `assets/` folder).
 
-   ```
-   bravia-tv.png  →  config/www/bravia-tv.png
-   ```
-
-4. Add the resource in Home Assistant:
+3. Add the resource in Home Assistant:
 
    **Settings → Dashboards → Resources → Add Resource**
 
    | Field | Value |
    |-------|-------|
-   | URL   | `/local/bravia-tv-display.js` |
+   | URL   | `/local/bravia-tv-display/bravia-tv-display.js` |
    | Type  | JavaScript Module |
 
-5. Add the card to a dashboard via the **Manual** or **Code editor**.
-
-## Configuration
-
-```yaml
-type: custom:bravia-tv-display
-entity: media_player.android_tv_192_168_11_26
-image: /local/bravia-tv.png
-```
-
-### Options
-
-| Option | Type | Required | Default | Description |
-|--------|------|----------|---------|-------------|
-| `entity` | string | **Yes** | — | Your Android TV `media_player` entity ID |
-| `image` | string | **Yes** | — | Path to the TV photo (e.g. `/local/bravia-tv.png`) |
-| `screen_position` | object | No | *(see below)* | Position of the screen overlay on the TV photo |
-| `screen_refresh` | number | No | `10` | Seconds between screenshot refreshes |
+4. Add the card to a dashboard via the **Manual** or **Code editor** (use the YAML under **Configuration** above).
 
 ### Screen Position
 
-The screen overlay is positioned using **percentage values** relative to the TV photo dimensions. The defaults match the included `bravia-tv.png`:
+The screen overlay is positioned using **percentage values** relative to the TV photo dimensions. The defaults match a typical framing (tweak for your photo):
 
 ```yaml
 screen_position:

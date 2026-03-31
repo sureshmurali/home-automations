@@ -8,13 +8,13 @@
  * ─── Configuration ───────────────────────────────────────────────
  *
  *   type: custom:ecoone-visual-card
- *   image: /local/ecoone-outdoor.png
+ *   image: /local/ecoone-visual-card/assets/EcoOneIllustration.png
  *   aspect_ratio: "auto"          # or "16:9", "4:3", etc.
  *   entities:
  *     fault:                binary_sensor.omron_fault_status_4
  *     supply_status:        sensor.omron_hot_water_supply_status
  *     heating_status:       sensor.omron_water_heating_status
- *     operation_status:     sensor.omron_operation_status
+ *     operation_status:     binary_sensor.omron_operation_status
  *     tank_capacity_l:      sensor.omron_tank_capacity
  *     hot_water_remaining_l: sensor.omron_measured_amount_of_hot_water_remaining_in_tank
  *     cumulative_kwh:       sensor.omron_measured_cumulative_energy   # optional
@@ -113,7 +113,7 @@ const DEFAULT_ENTITIES: EcoOneEntities = {
   fault: "binary_sensor.omron_fault_status_4",
   supply_status: "sensor.omron_hot_water_supply_status",
   heating_status: "sensor.omron_water_heating_status",
-  operation_status: "sensor.omron_operation_status",
+  operation_status: "binary_sensor.omron_operation_status",
   tank_capacity_l: "sensor.omron_tank_capacity",
   hot_water_remaining_l: "sensor.omron_measured_amount_of_hot_water_remaining_in_tank",
 };
@@ -277,7 +277,7 @@ export class EcoOneVisualCard extends LitElement {
 
   public static getStubConfig(): Partial<EcoOneVisualCardConfig> {
     return {
-      image: "/local/ecoone-outdoor.png",
+      image: "/local/ecoone-visual-card/assets/EcoOneIllustration.png",
       entities: { ...DEFAULT_ENTITIES },
     };
   }
@@ -354,20 +354,44 @@ export class EcoOneVisualCard extends LitElement {
     return Number.isFinite(n) ? n : null;
   }
 
+  /** Trim, lowercase, collapse spaces — for robust string entity matching in HA */
+  private _normalizeComparable(s: string): string {
+    return s.trim().toLowerCase().replace(/_/g, " ").replace(/\s+/g, " ");
+  }
+
   /* ── Derived states ─────────────────────────────────────────── */
 
   private get _isOperating(): boolean {
     const s = this._entityState(this._entities.operation_status);
-    return s !== null && s !== "Off" && s !== "Standby";
+    if (s === null) return false;
+    const n = this._normalizeComparable(s);
+    return n !== "off" && n !== "standby";
+  }
+
+  /**
+   * True when heating_status indicates active heating.
+   * Matches Omron-style `heating` / `Heating` and avoids `not heating` (any casing/spacing).
+   */
+  private _isHeatingStateActive(): boolean {
+    const s = this._entityState(this._entities.heating_status);
+    if (s === null) return false;
+    const n = this._normalizeComparable(s);
+    if (n === "not heating" || n === "notheating") return false;
+    if (/\bnot\b/.test(n) && /\bheat/.test(n)) return false;
+    if (n === "heating" || n === "on" || n === "active") return true;
+    if (/\bheat/.test(n) && !/\bnot\b/.test(n)) return true;
+    return false;
   }
 
   private get _isHeating(): boolean {
-    return this._isOperating &&
-      this._entityState(this._entities.heating_status) === "Heating";
+    return this._isOperating && this._isHeatingStateActive();
   }
 
   private get _isSupplying(): boolean {
-    return this._entityState(this._entities.supply_status) === "Supplying Hot Water";
+    const s = this._entityState(this._entities.supply_status);
+    if (s === null) return false;
+    const n = this._normalizeComparable(s);
+    return n.includes("supply") || n === "on" || n === "active";
   }
 
   private get _hasFault(): boolean {
@@ -457,10 +481,19 @@ export class EcoOneVisualCard extends LitElement {
   }
 
   private _syncOverlaySize(): void {
+    if (!this._imgWidth) return;
+    const w = `${this._imgWidth}px`;
+    const h = `${this._imgHeight}px`;
     const overlay = this.shadowRoot?.querySelector(".svg-overlay") as HTMLElement | null;
-    if (!overlay || !this._imgWidth) return;
-    overlay.style.width = `${this._imgWidth}px`;
-    overlay.style.height = `${this._imgHeight}px`;
+    const bubbleLayer = this.shadowRoot?.querySelector(".bubble-layer") as HTMLElement | null;
+    if (overlay) {
+      overlay.style.width = w;
+      overlay.style.height = h;
+    }
+    if (bubbleLayer) {
+      bubbleLayer.style.width = w;
+      bubbleLayer.style.height = h;
+    }
   }
 
   private _cssVar(name: string, fallback: string): string {
@@ -871,9 +904,18 @@ export class EcoOneVisualCard extends LitElement {
       z-index: 0;
     }
 
+    /* Bubbles sit above vignette / warm-glow (z-index 3) so they stay visible in HA */
+    .bubble-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 4;
+    }
+
     .tank-bubble-field {
       position: absolute;
-      z-index: 1;
+      z-index: 0;
       left: var(--ecoone-tank-bubble-left);
       top: var(--ecoone-tank-bubble-top);
       width: var(--ecoone-tank-bubble-width);
@@ -1017,7 +1059,7 @@ export class EcoOneVisualCard extends LitElement {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 3;
+      z-index: 5;
       background: var(--ecoone-color-fault-overlay);
       opacity: 0;
     }
@@ -1078,6 +1120,12 @@ export class EcoOneVisualCard extends LitElement {
 
           <div class="svg-overlay">
             <div class="ecoone-svg-mount" .innerHTML="${this._svgContent}"></div>
+          </div>
+
+          <div class="vignette"></div>
+          <div class="warm-glow ${heating ? "active" : ""}"></div>
+
+          <div class="bubble-layer">
             <div
               class="tank-bubble-field ${heating ? "tank-bubble-field--active" : ""}"
               data-zone="hot"
@@ -1094,8 +1142,6 @@ export class EcoOneVisualCard extends LitElement {
             </div>
           </div>
 
-          <div class="vignette"></div>
-          <div class="warm-glow ${heating ? "active" : ""}"></div>
           <div class="fault-overlay ${fault ? "active" : ""}"></div>
 
         </div>

@@ -268,13 +268,13 @@
       fault:     'binary_sensor.omron_fault_status_4',
       supply:    'sensor.omron_hot_water_supply_status',
       heating:   'sensor.omron_water_heating_status',
-      operation: 'sensor.omron_operation_status',
+      operation: 'binary_sensor.omron_operation_status',
       capacity:  'sensor.omron_tank_capacity',
       remaining: 'sensor.omron_measured_amount_of_hot_water_remaining_in_tank',
     };
 
     card.setConfig({
-      image: './EcoOneIllustration.png',
+      image: './assets/EcoOneIllustration.png',
       entities: {
         fault:                ENTITIES.fault,
         supply_status:        ENTITIES.supply,
@@ -290,8 +290,8 @@
         states: {
           [ENTITIES.fault]:     { state: mockState.fault ? 'on' : 'off' },
           [ENTITIES.supply]:    { state: mockState.supply ? 'Supplying Hot Water' : 'Stopped' },
-          [ENTITIES.heating]:   { state: mockState.heating ? 'Heating' : 'Not Heating' },
-          [ENTITIES.operation]: { state: mockState.off ? 'Off' : 'On' },
+          [ENTITIES.heating]:   { state: mockState.heating ? 'Heating' : 'not heating' },
+          [ENTITIES.operation]: { state: mockState.off ? 'off' : 'on' },
           [ENTITIES.capacity]:  { state: String(mockState.capacity) },
           [ENTITIES.remaining]: { state: String(mockState.fill) },
         },
@@ -311,8 +311,8 @@
         : 0;
 
       document.getElementById('status').innerHTML =
-        `operation: <span>${mockState.off ? 'Off' : 'On'}</span>  ` +
-        `heating: <span>${mockState.heating ? 'Heating' : 'Not Heating'}</span>  ` +
+        `operation: <span>${mockState.off ? 'off' : 'on'}</span>  ` +
+        `heating: <span>${mockState.heating ? 'Heating' : 'not heating'}</span>  ` +
         `supply: <span>${mockState.supply ? 'Supplying' : 'Stopped'}</span><br>` +
         `fault: <span>${mockState.fault ? 'ON' : 'off'}</span>  ` +
         `tank: <span>${mockState.fill}L / ${mockState.capacity}L (${pct}%)</span>`;

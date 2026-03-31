@@ -4,6 +4,49 @@ A Home Assistant Lovelace custom card that provides a **full remote control** fo
 
 ![card-type](https://img.shields.io/badge/card-custom-blue) ![ha](https://img.shields.io/badge/home--assistant-custom--card-41BDF5)
 
+## Configuration
+
+Register `/local/bravia-tv-remote/bravia-tv-remote.js` as a **JavaScript Module** (see Installation).
+
+🖼️ **App launcher icons** (YouTube, Netflix, IPTV) are PNG files under `assets/` in this repo. They deploy to `/local/bravia-tv-remote/assets/` — the card does **not** use inline `data:` URLs (Home Assistant’s CSP often blocks those on `<img>`).
+
+Then add:
+
+```yaml
+type: custom:bravia-tv-remote
+entity: media_player.android_tv_192_168_11_26
+```
+
+Optional — customize app launchers (defaults match the block below):
+
+```yaml
+type: custom:bravia-tv-remote
+entity: media_player.android_tv_192_168_11_26
+apps:
+  - name: YouTube
+    icon: youtube
+    package: com.google.android.youtube.tv
+  - name: Netflix
+    icon: netflix
+    package: com.netflix.ninja
+  - name: IPTV
+    icon: tv
+    package: ru.iptvremote.android.iptv
+```
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `entity` | string | **Yes** | — | Your Android TV `media_player` entity ID |
+| `apps` | array | No | YouTube, Netflix, IPTV | List of app launcher buttons to display |
+
+Each entry in `apps`:
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `name` | string | **Yes** | Display name for the app |
+| 🖼️ `icon` | string | **Yes** | Icon identifier (`youtube`, `netflix`, `tv`) → matches files under `assets/` |
+| `package` | string | **Yes** | Android package name for the app |
+
 ## Features
 
 - **Now Playing** — displays current media title, artist, and album art
@@ -37,33 +80,34 @@ This creates `dist/bravia-tv-remote.js` (the compiled card).
 
 ### Step 2: Deploy to Home Assistant
 
-You have several options to deploy the card to your Home Assistant instance:
+You have several options to deploy the card to your Home Assistant instance. Prefer `config/www/bravia-tv-remote/` so paths match the deploy script and **Configuration** above.
 
 #### Option A: Direct File Copy (Local Installation)
 
 If you have direct access to your Home Assistant configuration directory:
 
 ```bash
-# Copy the built file to Home Assistant's www directory
-cp dist/bravia-tv-remote.js /path/to/homeassistant/config/www/
+mkdir -p /path/to/homeassistant/config/www/bravia-tv-remote
+cp dist/bravia-tv-remote.js /path/to/homeassistant/config/www/bravia-tv-remote/
+cp -R dist/assets /path/to/homeassistant/config/www/bravia-tv-remote/
 
 # Example paths:
-# Docker: /volume1/docker/homeassistant/config/www/
-# HAOS: /config/www/
-# Core: ~/.homeassistant/www/
+# Docker: /volume1/docker/homeassistant/config/www/bravia-tv-remote/
+# HAOS: /config/www/bravia-tv-remote/
+# Core: ~/.homeassistant/www/bravia-tv-remote/
 ```
 
 #### Option B: Using Samba/SMB Share
 
 1. Connect to your Home Assistant via network share (Samba/SMB)
-2. Navigate to the `config/www/` folder
-3. Copy `dist/bravia-tv-remote.js` into this folder
+2. Under `config/www/`, open or create the folder `bravia-tv-remote`
+3. Copy `dist/bravia-tv-remote.js` and `dist/assets/` into that folder
 
 #### Option C: Using File Editor Add-on
 
 1. Install the **File Editor** add-on from Home Assistant
-2. Create the `www` folder if it doesn't exist
-3. Upload `dist/bravia-tv-remote.js` to `config/www/`
+2. Create `www/bravia-tv-remote` if it doesn't exist
+3. Upload `dist/bravia-tv-remote.js` and `dist/assets/` to `config/www/bravia-tv-remote/`
 
 #### Option D: Using SSH/Terminal
 
@@ -71,11 +115,12 @@ cp dist/bravia-tv-remote.js /path/to/homeassistant/config/www/
 # SSH into your Home Assistant instance
 ssh root@homeassistant.local
 
-# Create www directory if it doesn't exist
-mkdir -p /config/www
+# Create directory if it doesn't exist
+mkdir -p /config/www/bravia-tv-remote
 
 # Exit SSH and copy file from your local machine
-scp dist/bravia-tv-remote.js root@homeassistant.local:/config/www/
+scp dist/bravia-tv-remote.js root@homeassistant.local:/config/www/bravia-tv-remote/
+scp -r dist/assets root@homeassistant.local:/config/www/bravia-tv-remote/
 ```
 
 ### Step 3: Register the Resource in Home Assistant
@@ -83,7 +128,7 @@ scp dist/bravia-tv-remote.js root@homeassistant.local:/config/www/
 1. Go to **Settings → Dashboards → Resources** (top-right menu)
 2. Click **+ Add Resource**
 3. Configure:
-   - **URL**: `/local/bravia-tv-remote.js`
+   - **URL**: `/local/bravia-tv-remote/bravia-tv-remote.js`
    - **Resource type**: JavaScript Module
 4. Click **Create**
 
@@ -100,10 +145,7 @@ scp dist/bravia-tv-remote.js root@homeassistant.local:/config/www/
 
 #### Using YAML:
 
-```yaml
-type: custom:bravia-tv-remote
-entity: media_player.android_tv_192_168_11_26
-```
+Use the snippets under **Configuration** at the top of this README.
 
 ### Updating the Card
 
@@ -111,43 +153,9 @@ When you make changes and rebuild:
 
 ```bash
 npm run build
-# Copy the new dist/bravia-tv-remote.js to /config/www/
+# Copy the new dist/bravia-tv-remote.js and dist/assets/ to config/www/bravia-tv-remote/
 # Clear browser cache and refresh Home Assistant
 ```
-
-## Configuration
-
-```yaml
-type: custom:bravia-tv-remote
-entity: media_player.android_tv_192_168_11_26
-apps:
-  - name: YouTube
-    icon: youtube
-    package: com.google.android.youtube.tv
-  - name: Netflix
-    icon: netflix
-    package: com.netflix.ninja
-  - name: IPTV
-    icon: tv
-    package: ru.iptvremote.android.iptv
-```
-
-### Options
-
-| Option | Type | Required | Default | Description |
-|--------|------|----------|---------|-------------|
-| `entity` | string | **Yes** | — | Your Android TV `media_player` entity ID |
-| `apps` | array | No | YouTube, Netflix, IPTV | List of app launcher buttons to display |
-
-### App Configuration
-
-Each app in the `apps` array has the following properties:
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `name` | string | **Yes** | Display name for the app |
-| `icon` | string | **Yes** | Icon identifier (`youtube`, `netflix`, `tv`) |
-| `package` | string | **Yes** | Android package name for the app |
 
 ## Button Reference
 
@@ -272,7 +280,8 @@ type: horizontal-stack
 cards:
   - type: custom:bravia-tv-display
     entity: media_player.android_tv_192_168_11_26
-    image: /local/bravia-tv.png
+    # 🖼️ TV photo
+    image: /local/bravia-tv-display/assets/bravia-tv.png
 
   - type: custom:bravia-tv-remote
     entity: media_player.android_tv_192_168_11_26

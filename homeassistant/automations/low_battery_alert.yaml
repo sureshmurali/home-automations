@@ -1,0 +1,102 @@
+# Low battery alert – Alexa TTS notification.
+# Monitors all listed devices and announces when battery drops below a threshold.
+# Respects quiet hours. All settings are configurable via the variables block.
+#
+# To add via HA UI: Settings > Automations > + Create > Edit in YAML
+# Paste everything below the "---" line.
+# ---
+alias: Low Battery Alert
+description: >-
+  Notify via Alexa when any monitored device battery drops below a configured
+  threshold. Skips if the device is charging or during quiet hours.
+mode: queued
+max: 10
+
+variables:
+  # ================================================================
+  #  DEVICES TO MONITOR
+  #  To add a device, add entries to BOTH dicts below
+  #  AND to triggers > entity_id further down.
+  # ================================================================
+
+  # Friendly names for Alexa announcements.
+  device_names:
+    sensor.pixel_6_battery_level: "Suresh Phone"
+    sensor.akhila_iphone_battery_level: "Akhila iPhone"
+    sensor.ipad_battery_level: "iPad"
+    sensor.macbook_akqa_internal_battery_level: "Macbook AKQA"
+    sensor.personal_macbook_internal_battery_level: "Personal Macbook"
+
+  # Matching battery-state sensor for each device.
+  charging_entities:
+    sensor.pixel_6_battery_level: sensor.pixel_6_battery_state
+    sensor.akhila_iphone_battery_level: sensor.akhila_iphone_battery_state
+    sensor.ipad_battery_level: sensor.ipad_battery_state
+    sensor.macbook_akqa_internal_battery_level: sensor.macbook_akqa_internal_battery_state
+    sensor.personal_macbook_internal_battery_level: sensor.personal_macbook_internal_battery_state
+
+  # Battery thresholds (percent). An alert fires once when the level
+  # drops from at-or-above a threshold to below it.
+  battery_thresholds:
+    - 25
+    - 20
+    - 15
+    - 10
+    - 5
+    - 1
+
+  # Quiet hours – suppress all alerts between these times.
+  quiet_start: "22:00:00"
+  quiet_end: "07:00:00"
+
+  # Alexa devices to announce on.
+  alexa_targets:
+    - media_player.hall_echo_dot
+    - media_player.bedroom_echo_dot
+    - media_player.echo_show
+
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.pixel_6_battery_level
+      - sensor.akhila_iphone_battery_level
+      - sensor.ipad_battery_level
+      - sensor.macbook_akqa_internal_battery_level
+      - sensor.personal_macbook_internal_battery_level
+
+conditions:
+  - condition: template
+    value_template: >-
+      {% set t = now().strftime('%H:%M:%S') %}
+      {% if quiet_start > quiet_end %}
+        {{ t >= quiet_end and t < quiet_start }}
+      {% else %}
+        {{ t < quiet_start or t >= quiet_end }}
+      {% endif %}
+
+  - condition: template
+    value_template: >-
+      {{ states(charging_entities[trigger.entity_id]) | lower
+         not in ['charging', 'full'] }}
+
+  - condition: template
+    value_template: >-
+      {% set old = trigger.from_state.state | int(-1) %}
+      {% set new = trigger.to_state.state | int(-1) %}
+      {% set ns = namespace(crossed=false) %}
+      {% for t in battery_thresholds %}
+        {% if old >= t and new < t and new >= 0 %}
+          {% set ns.crossed = true %}
+        {% endif %}
+      {% endfor %}
+      {{ ns.crossed }}
+
+actions:
+  - action: notify.alexa_media
+    data:
+      target: "{{ alexa_targets }}"
+      message: >-
+        {{ device_names[trigger.entity_id] }} battery is at
+        {{ trigger.to_state.state }} percent. Please charge soon.
+      data:
+        type: tts

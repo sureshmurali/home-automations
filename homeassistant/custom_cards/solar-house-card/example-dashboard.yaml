@@ -2,26 +2,27 @@
 #
 # Setup:
 #   1. npm install && npm run build
-#   2. Copy dist/solar-house-card.js → config/www/solar-house-card.js
-#   3. Copy home.png    → config/www/home.png
-#   4. Add resource: /local/solar-house-card.js (JavaScript Module)
+#   2. Copy dist/solar-house-card.js → config/www/solar-house-card/solar-house-card.js
+#   3. Copy assets/* → config/www/solar-house-card/assets/
+#   4. Add resource: /local/solar-house-card/solar-house-card.js (JavaScript Module)
 #   5. Add this card via Manual/Code editor
 
 type: custom:solar-house-card
 
 # --- Background ---
 # Single image:
-image: /local/home.png
+# 🖼️ House illustration (deploy: look for 🖼️ assets/ in logs)
+image: /local/solar-house-card/assets/home.png
 
-# Or weather/time variants (use instead of `image`):
+# Or weather/time variants (use instead of `image`); place files in assets/ on the HA host:
 # images:
-#   default: /local/solar-house-default.png
-#   sunny: /local/solar-house-sunny.png
-#   rainy: /local/solar-house-rainy.png
-#   drizzle: /local/solar-house-drizzle.png
-#   day: /local/solar-house-day.png
-#   noon: /local/solar-house-noon.png
-#   night: /local/solar-house-night.png
+#   default: /local/solar-house-card/assets/solar-house-default.png
+#   sunny: /local/solar-house-card/assets/solar-house-sunny.png
+#   rainy: /local/solar-house-card/assets/solar-house-rainy.png
+#   drizzle: /local/solar-house-card/assets/solar-house-drizzle.png
+#   day: /local/solar-house-card/assets/solar-house-day.png
+#   noon: /local/solar-house-card/assets/solar-house-noon.png
+#   night: /local/solar-house-card/assets/solar-house-night.png
 # weather_entity: weather.home
 
 # --- Entities ---

@@ -73,7 +73,7 @@ export class SolarHouseCard extends LitElement {
 
   public static getStubConfig(): Partial<SolarHouseCardConfig> {
     return {
-      image: "/local/home.png",
+      image: "/local/solar-house-card/assets/home.png",
       battery_entity: "sensor.solar_31_remaining_stored_electricity_3",
       show_flow_line: true,
       positions: { ...DEFAULT_POSITIONS },

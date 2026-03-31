@@ -14,6 +14,9 @@ fi
 SSH_HOST="${SSH_HOST:-ohana-pi.local}"
 SSH_USER="${SSH_USER:-sureshmurali}"
 REMOTE_PATH="${REMOTE_PATH:-/home/sureshmurali/homeassistant/config/www}"
+HA_URL="${HA_URL:-}"
+HA_TOKEN="${HA_TOKEN:-}"
+HA_CONTAINER="${HA_CONTAINER:-homeassistant}"
 
 SSH_TARGET="${SSH_USER}@${SSH_HOST}"
 CLEAN_DEPLOY="${DEPLOY_CLEAN:-0}"
@@ -77,10 +80,11 @@ do_ssh() {
 }
 
 # ── Card registry ─────────────────────────────────────────────────────
-# Each entry: card_dir|js_filename|space-separated asset globs
+# Each entry: card_dir|js_filename|optional space-separated extra files
+# Static images live in <card>/assets/ — synced automatically after JS upload.
 CARDS=(
-  "solar-house-card|solar-house-card.js|home.png"
-  "ecoone-visual-card|ecoone-visual-card.js|EcoOneIllustration.png"
+  "solar-house-card|solar-house-card.js|"
+  "ecoone-visual-card|ecoone-visual-card.js|"
   "bravia-tv-display|bravia-tv-display.js|"
   "bravia-tv-remote|bravia-tv-remote.js|"
 )
@@ -136,22 +140,33 @@ for entry in "${CARDS[@]}"; do
   log_info "Uploading JS: ${js_file}"
   do_rsync "${js_path}" "${remote_card_dir}/"
 
-  # Deploy assets from the card's root directory
+  # Deploy assets: prefer project root, then dist/ (build may copy PNGs into dist)
   if [[ -n "$assets" ]]; then
     for asset in $assets; do
       asset_path="${ROOT_DIR}/${card_dir}/${asset}"
+      if [[ ! -f "$asset_path" ]]; then
+        asset_path="${ROOT_DIR}/${card_dir}/dist/${asset}"
+      fi
       if [[ -f "$asset_path" ]]; then
-        log_info "Uploading asset: ${asset}"
+        log_info "🖼️  Uploading image/asset: ${asset}"
         do_rsync "${asset_path}" "${remote_card_dir}/"
       else
-        log_warn "${card_dir}/${asset} not found, skipping"
+        log_warn "🖼️  ${card_dir}/${asset} not found (checked ${card_dir}/ and ${card_dir}/dist/), skipping"
       fi
     done
   fi
 
+  # Sync assets/ (canonical folder for PNG/SVG — avoids missed deploys)
+  local_card_assets="${ROOT_DIR}/${card_dir}/assets"
+  if [[ -d "$local_card_assets" ]] && [[ -n "$(ls -A "$local_card_assets" 2>/dev/null)" ]]; then
+    log_info "🖼️  Uploading ${card_dir}/assets/ (images & static files)"
+    do_ssh "mkdir -p '${remote_card_dir}/assets'"
+    do_rsync "${local_card_assets}/" "${remote_card_dir}/assets/"
+  fi
+
   deployed=$((deployed + 1))
   log_ok "${card_dir} complete"
-  echo "-------------------------------------------------------"
+  echo "🚀 ─────────────────────────────────────────────────────── 🚀"
 done
 
 if [[ $deployed -eq 0 ]]; then
@@ -164,6 +179,82 @@ ELAPSED="$((END_TS - START_TS))"
 
 log_ok "Deployed ${deployed} card(s) to ${SSH_TARGET}:${REMOTE_PATH}"
 log_info "Total time: ${ELAPSED}s"
+echo "🚀 ─────────────────────────────────────────────────────── 🚀"
+
+# ── Post-deploy cache bust ────────────────────────────────────────────
+# Strategy 1: HA REST API — bump ?v= on each resource URL (zero downtime)
+# Strategy 2: Docker restart (fallback, ~30s downtime)
+# Set DEPLOY_RESTART=0 to skip both.
+
+DEPLOY_RESTART="${DEPLOY_RESTART:-1}"
+
+if [[ "$DEPLOY_RESTART" == "0" ]]; then
+  log_info "Cache refresh skipped (DEPLOY_RESTART=0)"
+
+elif [[ -n "$HA_URL" && -n "$HA_TOKEN" ]]; then
+  echo ""
+  log_step "Cache refresh — bumping Lovelace resource versions (zero downtime)"
+
+  VERSION_STAMP="$(date +%s)"
+  RESOURCES_JSON=$(curl -sf -H "Authorization: Bearer ${HA_TOKEN}" \
+    "${HA_URL}/api/config/lovelace/resources" 2>/dev/null || echo "")
+
+  if [[ -z "$RESOURCES_JSON" ]]; then
+    log_warn "Could not fetch Lovelace resources from ${HA_URL} — check HA_URL and HA_TOKEN"
+  else
+    bumped=0
+    for entry in "${CARDS[@]}"; do
+      IFS='|' read -r card_dir js_file _ <<< "$entry"
+      if [[ -n "$FILTER" && "$card_dir" != "$FILTER" ]]; then
+        continue
+      fi
+
+      MATCH_PATH="${card_dir}/${js_file}"
+      RESOURCE_ID=$(echo "$RESOURCES_JSON" | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+for r in data:
+    if '${MATCH_PATH}' in r.get('url', ''):
+        print(r['id'])
+        break
+" 2>/dev/null || echo "")
+
+      if [[ -n "$RESOURCE_ID" ]]; then
+        NEW_URL="/local/${card_dir}/${js_file}?v=${VERSION_STAMP}"
+        HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" -X PUT \
+          -H "Authorization: Bearer ${HA_TOKEN}" \
+          -H "Content-Type: application/json" \
+          "${HA_URL}/api/config/lovelace/resources/${RESOURCE_ID}" \
+          -d "{\"url\": \"${NEW_URL}\", \"type\": \"module\"}" 2>/dev/null || echo "000")
+
+        if [[ "$HTTP_CODE" == "200" || "$HTTP_CODE" == "201" ]]; then
+          log_ok "🔄 ${card_dir} → ?v=${VERSION_STAMP}"
+          bumped=$((bumped + 1))
+        else
+          log_warn "Failed to update ${card_dir} resource (HTTP ${HTTP_CODE})"
+        fi
+      else
+        log_warn "No Lovelace resource found matching ${MATCH_PATH}"
+      fi
+    done
+
+    if [[ $bumped -gt 0 ]]; then
+      log_ok "Cache busted — ${bumped} resource(s) versioned. Browsers will auto-refetch."
+    fi
+  fi
+
+else
+  echo ""
+  log_step "Cache refresh — restarting HA container (${HA_CONTAINER})"
+  if do_ssh "docker restart '${HA_CONTAINER}'" &>/dev/null; then
+    log_ok "🔄 Container '${HA_CONTAINER}' restarted (~30s for HA to come back)"
+    log_info "Hard-refresh your browser (Ctrl+Shift+R / Cmd+Shift+R) to clear browser cache"
+  else
+    log_warn "Could not restart '${HA_CONTAINER}' — you may need to restart manually"
+  fi
+fi
+
+echo "🚀 ─────────────────────────────────────────────────────── 🚀"
 echo ""
 echo "📝 Lovelace resource paths (add in HA → Settings → Dashboards → Resources):"
 for entry in "${CARDS[@]}"; do
@@ -173,4 +264,7 @@ for entry in "${CARDS[@]}"; do
   fi
   echo "   /local/${card_dir}/${js_file}  (JavaScript Module)"
 done
+echo ""
+echo "🖼️  Card image paths use /local/<card>/assets/… — confirm 🖼️ lines above during deploy."
+echo "🚀 ─────────────────────────────────────────────────────── 🚀"
 echo ""

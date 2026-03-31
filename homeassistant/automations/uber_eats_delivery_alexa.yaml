@@ -1,0 +1,31 @@
+# Announce Uber Eats delivery updates on the hall Alexa.
+# Triggers on the Pixel 6 companion app's "Last Notification" sensor,
+# filters for the Uber Eats package and delivery-related keywords only.
+#
+# To add via HA UI: Settings > Automations > + Create > Edit in YAML
+# Paste everything below the "---" line.
+# ---
+alias: Uber Eats - Delivery updates to hall Alexa
+description: >-
+  When Uber Eats sends a delivery status notification (preparing, picking up,
+  arriving, etc.), announce it on the hall Alexa via script.alexa_say.
+mode: queued
+max: 5
+triggers:
+  - trigger: state
+    entity_id: sensor.pixel_6_last_notification
+conditions:
+  - condition: template
+    value_template: >
+      {{ state_attr('sensor.pixel_6_last_notification', 'package')
+         == 'com.ubercab.eats' }}
+actions:
+  - action: script.alexa_say
+    data:
+      target: hall
+      message: >
+        Uber Eats update:
+        {{ state_attr('sensor.pixel_6_last_notification', 'android.title')
+           | default('') }}.
+        {{ state_attr('sensor.pixel_6_last_notification', 'android.text')
+           | default('') }}

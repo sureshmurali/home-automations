@@ -7,17 +7,20 @@ This folder contains the build + deploy workflow for Lovelace custom cards.
 - Builds all card bundles (`*.js`) from each card project.
 - Uploads each card into an organized subfolder under:
   - `/home/sureshmurali/homeassistant/config/www/<card-name>/`
-- Uploads required card assets (for example `home.png`).
+- Syncs each card’s **`assets/`** folder (🖼️ PNG artwork, app icons, etc.) to `www/<card>/assets/` so nothing is missed.
 
 ## Remote folder structure
 
 After deploy, your Home Assistant host will look like:
 
 - `/config/www/solar-house-card/solar-house-card.js`
-- `/config/www/solar-house-card/home.png`
+- 🖼️ `/config/www/solar-house-card/assets/home.png` (and optional weather PNGs you add under `assets/`)
 - `/config/www/ecoone-visual-card/ecoone-visual-card.js`
+- 🖼️ `/config/www/ecoone-visual-card/assets/EcoOneIllustration.png`
 - `/config/www/bravia-tv-display/bravia-tv-display.js`
+- 🖼️ `/config/www/bravia-tv-display/assets/bravia-tv.png`
 - `/config/www/bravia-tv-remote/bravia-tv-remote.js`
+- 🖼️ `/config/www/bravia-tv-remote/assets/app-youtube.png`, `app-netflix.png`, `app-iptv.png`, …
 
 ## One-time setup
 
@@ -64,8 +67,7 @@ Run these from `homeassistant/custom_cards`:
    - `/local/ecoone-visual-card/ecoone-visual-card.js`
    - `/local/bravia-tv-display/bravia-tv-display.js`
    - `/local/bravia-tv-remote/bravia-tv-remote.js`
-3. Update image paths in card YAML to match subfolders (for example):
-   - `/local/solar-house-card/home.png`
+3. 🖼️ Use **`/local/<card>/assets/...`** for card images (see each card’s README — for example `image: /local/solar-house-card/assets/home.png`).
 4. Hard refresh the browser (Cmd+Shift+R) or clear frontend cache.
 5. Reload Lovelace dashboard.
 
