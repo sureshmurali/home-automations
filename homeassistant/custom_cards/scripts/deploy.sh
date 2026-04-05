@@ -87,6 +87,7 @@ CARDS=(
   "ecoone-visual-card|ecoone-visual-card.js|"
   "bravia-tv-display|bravia-tv-display.js|"
   "bravia-tv-remote|bravia-tv-remote.js|"
+  "pi-temp-card|pi-temp-card.js|"
 )
 
 # Allow deploying a single card: npm run deploy:card -- solar-house-card

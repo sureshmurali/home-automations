@@ -1,0 +1,29 @@
+# Pi Temperature Card — Example Lovelace config
+#
+# Setup:
+#   1. npm install && npm run build
+#   2. Copy dist/pi-temp-card.js → config/www/pi-temp-card/pi-temp-card.js
+#      (or use the deploy script: npm run deploy:card -- pi-temp-card)
+#   3. Add resource: /local/pi-temp-card/pi-temp-card.js (JavaScript Module)
+#   4. Add this card via Manual/Code editor
+#
+# Prerequisites:
+#   The Raspberry Pi CPU temperature sensor must be available.
+#   If running HA on the Pi: Settings → Devices & Services → Add Integration → System Monitor
+#   Enable "Processor Temperature" → entity becomes sensor.processor_temperature
+
+type: custom:pi-temp-card
+
+# --- Entity ID for the CPU temperature sensor ---
+entity: sensor.processor_temperature
+
+# --- Display name (optional, default "Raspberry Pi") ---
+# name: "Ohana Pi"
+
+# --- Temperature thresholds in °C (all optional, defaults shown) ---
+# thresholds:
+#   cool: 50        # below this → "Running Cool" (green)
+#   normal: 65      # below this → "Normal" (teal)
+#   warm: 75        # below this → "Getting Warm" (amber)
+#   hot: 80         # below this → "Running Hot" (orange)
+#                   # above hot  → "Overheating!" (red) — Pi throttles at 80°C

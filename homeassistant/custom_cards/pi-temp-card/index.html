@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pi Temp Card – Preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0e0e0e;
+      color: #ccc;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.2rem; margin: 0 0 4px; font-weight: 500; }
+    .meta { margin: 0 0 16px; font-size: 0.72rem; color: #555; }
+    .preview-wrap { max-width: 400px; margin: 0 auto; }
+    ha-card {
+      display: block;
+      background: var(--ha-card-background, #1a1a1a);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .slider-group {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .slider-group label {
+      font-size: 0.72rem;
+      color: #666;
+      min-width: 90px;
+    }
+    .slider-group input[type="range"] {
+      flex: 1;
+      accent-color: #26a69a;
+    }
+    .slider-group .val {
+      font-size: 0.72rem;
+      color: #26a69a;
+      min-width: 60px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .status {
+      margin-top: 14px;
+      font-size: 0.68rem;
+      color: #444;
+      line-height: 1.6;
+      font-family: "SF Mono", "Fira Code", monospace;
+    }
+    .status span { color: #888; }
+  </style>
+</head>
+<body>
+  <div class="preview-wrap">
+    <h1>Pi Temperature Card</h1>
+    <p class="meta">Local preview — drag the slider to simulate temperature changes</p>
+
+    <pi-temp-card id="card"></pi-temp-card>
+
+    <div class="slider-group">
+      <label>Temperature</label>
+      <input type="range" id="temp-slider" min="25" max="95" value="52" step="0.5" oninput="setTemp(this.value)" />
+      <span class="val" id="temp-val">52.0°C</span>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script type="module">
+    import './src/pi-temp-card.ts';
+
+    const card = document.getElementById('card');
+    const ENTITY = 'sensor.processor_temperature';
+    let currentTemp = 52;
+
+    card.setConfig({
+      entity: ENTITY,
+      name: 'Raspberry Pi',
+    });
+
+    function refresh() {
+      card.hass = {
+        states: {
+          [ENTITY]: {
+            state: String(currentTemp),
+            attributes: { unit_of_measurement: '°C' },
+          },
+        },
+      };
+
+      let zone = 'cool';
+      if (currentTemp >= 80) zone = 'critical';
+      else if (currentTemp >= 75) zone = 'hot';
+      else if (currentTemp >= 65) zone = 'warm';
+      else if (currentTemp >= 50) zone = 'normal';
+
+      document.getElementById('status').innerHTML =
+        `temp: <span>${currentTemp}°C</span>  zone: <span>${zone}</span>`;
+    }
+
+    window.setTemp = function(val) {
+      currentTemp = parseFloat(val);
+      document.getElementById('temp-val').textContent = currentTemp.toFixed(1) + '°C';
+      refresh();
+    };
+
+    refresh();
+  </script>
+</body>
+</html>
