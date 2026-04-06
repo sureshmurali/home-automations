@@ -17,7 +17,7 @@ triggers:
 conditions:
   - condition: template
     value_template: >
-      {{ state_attr('sensor.pixel_6_last_notification', 'package')
+      {{ trigger.to_state.attributes.get('package', '')
          == 'com.ubercab.eats' }}
 actions:
   - action: script.alexa_say
@@ -25,7 +25,7 @@ actions:
       target: hall
       message: >
         Uber Eats update:
-        {{ state_attr('sensor.pixel_6_last_notification', 'android.title')
-           | default('') }}.
-        {{ state_attr('sensor.pixel_6_last_notification', 'android.text')
-           | default('') }}
+        {{ trigger.to_state.attributes.get('android.title', '')
+           | default('', true) }}.
+        {{ trigger.to_state.attributes.get('android.text', '')
+           | default('', true) }}
