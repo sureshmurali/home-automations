@@ -139,8 +139,7 @@ export class SolarHouseCard extends LitElement {
   }
 
   private _formatPower(w: number): string {
-    if (w >= 1000) return `${(w / 1000).toFixed(1)} kW`;
-    return `${Math.round(w)} W`;
+    return `${(w / 1000).toFixed(1)} kW`;
   }
 
   static styles = css`
@@ -222,7 +221,7 @@ export class SolarHouseCard extends LitElement {
     const solarNum = solarState != null ? Number(solarState) : 0;
     const solarStr = Number.isNaN(solarNum) ? solarState ?? "—" : this._formatPower(solarNum);
     const gridNum = gridState != null ? Number(gridState) : NaN;
-    const gridStr = Number.isNaN(gridNum) ? (gridState ?? "—") : `${gridNum} kWh`;
+    const gridStr = Number.isNaN(gridNum) ? (gridState ?? "—") : `${gridNum} kW`;
     const batteryStr = batteryState != null && batteryState !== "unknown" && batteryState !== "unavailable"
       ? `${batteryState}%` : "—";
 

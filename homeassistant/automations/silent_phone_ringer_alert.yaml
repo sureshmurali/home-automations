@@ -1,0 +1,71 @@
+# Silent phone ringer alert – Alexa TTS notification.
+# Announces via Alexa when Pixel 6 or Akhila's iPhone is ringing
+# while the phone is in silent or vibrate mode.
+# Alerts only on hall and living room Alexa devices.
+#
+# NOTE: Verify that the phone_state and ringer_mode entity IDs match
+# your HA companion app sensor names. Check Developer Tools > States.
+#
+# To add via HA UI: Settings > Automations > + Create > Edit in YAML
+# Paste everything below the "---" line.
+# ---
+alias: Silent Phone Ringer Alert
+description: >-
+  Notify via Alexa when Suresh's Pixel or Akhila's iPhone is ringing
+  while in silent or vibrate mode. Alerts on hall and living room Alexa only.
+mode: queued
+max: 5
+
+variables:
+  # ================================================================
+  #  DEVICES TO MONITOR
+  #  Phone state sensors (provided by HA companion app).
+  #  Values: idle, ringing, offhook
+  # ================================================================
+
+  # Friendly names for Alexa announcements.
+  device_names:
+    sensor.pixel_6_phone_state: "Suresh Phone"
+    sensor.akhila_iphone_phone_state: "Akhila Phone"
+
+  # Matching ringer-mode sensor for each phone.
+  # Android: sensor.<device>_ringer_mode  (normal, vibrate, silent)
+  # iOS:     sensor.<device>_ringer_mode  (Normal, Silent, Vibrate)
+  ringer_mode_entities:
+    sensor.pixel_6_phone_state: sensor.pixel_6_ringer_mode
+    sensor.akhila_iphone_phone_state: sensor.akhila_iphone_ringer_mode
+
+  # Ringer mode states that count as "silent".
+  silent_modes:
+    - "silent"
+    - "vibrate"
+    - "do_not_disturb"
+
+  # Alexa devices to announce on (hall and living room only).
+  # TODO: Update living room entity ID to match your actual device.
+  alexa_targets:
+    - media_player.hall_echo_dot
+    - media_player.living_room_echo_dot
+
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.pixel_6_phone_state
+      - sensor.akhila_iphone_phone_state
+    to: "ringing"
+
+conditions:
+  - condition: template
+    value_template: >-
+      {{ states(ringer_mode_entities[trigger.entity_id]) | lower
+         in silent_modes }}
+
+actions:
+  - action: notify.alexa_media
+    data:
+      target: "{{ alexa_targets }}"
+      message: >-
+        {{ device_names[trigger.entity_id] }} is ringing, but the phone
+        is on silent mode. Please check your phone.
+      data:
+        type: tts

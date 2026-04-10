@@ -4,9 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-if [[ -f "$ROOT_DIR/.env" ]]; then
+# ── Load .env from repo root ──────────────────────────────────────────
+REPO_ROOT="$(cd "$ROOT_DIR/../../.." && pwd)"
+if [[ -f "$REPO_ROOT/.env" ]]; then
   set -a
-  source "$ROOT_DIR/.env"
+  source "$REPO_ROOT/.env"
   set +a
 fi
 

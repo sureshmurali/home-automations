@@ -126,33 +126,34 @@ interface BubbleSpec {
   durationMultiplier: number;
   delay: number;
   wobble: number;
+  startY?: number;
 }
 
 const HOT_BUBBLES: BubbleSpec[] = [
-  { left: "10%", sizeMultiplier: 1.0, durationMultiplier: 1.0, delay: 0.0, wobble: 4 },
-  { left: "22%", sizeMultiplier: 1.3, durationMultiplier: 1.1, delay: 0.25, wobble: -5 },
-  { left: "34%", sizeMultiplier: 1.1, durationMultiplier: 0.95, delay: 0.1, wobble: 3 },
-  { left: "46%", sizeMultiplier: 1.5, durationMultiplier: 1.2, delay: 0.4, wobble: -4 },
-  { left: "58%", sizeMultiplier: 0.9, durationMultiplier: 0.85, delay: 0.55, wobble: 6 },
-  { left: "70%", sizeMultiplier: 1.2, durationMultiplier: 1.05, delay: 0.15, wobble: -3 },
-  { left: "82%", sizeMultiplier: 1.4, durationMultiplier: 1.15, delay: 0.35, wobble: 5 },
-  { left: "16%", sizeMultiplier: 1.0, durationMultiplier: 0.9, delay: 0.65, wobble: -6 },
-  { left: "40%", sizeMultiplier: 1.3, durationMultiplier: 1.0, delay: 0.3, wobble: 4 },
-  { left: "52%", sizeMultiplier: 1.1, durationMultiplier: 1.1, delay: 0.75, wobble: -4 },
-  { left: "64%", sizeMultiplier: 0.8, durationMultiplier: 0.88, delay: 0.5, wobble: 3 },
-  { left: "76%", sizeMultiplier: 1.2, durationMultiplier: 1.0, delay: 0.2, wobble: -5 },
-  { left: "88%", sizeMultiplier: 1.0, durationMultiplier: 0.92, delay: 0.85, wobble: 5 },
-  { left: "28%", sizeMultiplier: 1.5, durationMultiplier: 1.08, delay: 0.45, wobble: -3 },
+  { left: "8%",  sizeMultiplier: 1.0, durationMultiplier: 1.0,  delay: 0.0,  wobble: 8,  startY: 0.12 },
+  { left: "22%", sizeMultiplier: 1.3, durationMultiplier: 1.1,  delay: 0.25, wobble: -10, startY: 0.55 },
+  { left: "38%", sizeMultiplier: 1.1, durationMultiplier: 0.95, delay: 0.1,  wobble: 7,  startY: 0.78 },
+  { left: "52%", sizeMultiplier: 1.5, durationMultiplier: 1.2,  delay: 0.4,  wobble: -9, startY: 0.33 },
+  { left: "68%", sizeMultiplier: 0.9, durationMultiplier: 0.85, delay: 0.55, wobble: 11, startY: 0.91 },
+  { left: "82%", sizeMultiplier: 1.2, durationMultiplier: 1.05, delay: 0.15, wobble: -7, startY: 0.05 },
+  { left: "92%", sizeMultiplier: 1.4, durationMultiplier: 1.15, delay: 0.35, wobble: 9,  startY: 0.67 },
+  { left: "15%", sizeMultiplier: 1.0, durationMultiplier: 0.9,  delay: 0.65, wobble: -12, startY: 0.42 },
+  { left: "45%", sizeMultiplier: 1.3, durationMultiplier: 1.0,  delay: 0.3,  wobble: 8,  startY: 0.85 },
+  { left: "58%", sizeMultiplier: 1.1, durationMultiplier: 1.1,  delay: 0.75, wobble: -8, startY: 0.20 },
+  { left: "75%", sizeMultiplier: 0.8, durationMultiplier: 0.88, delay: 0.5,  wobble: 6,  startY: 0.60 },
+  { left: "30%", sizeMultiplier: 1.2, durationMultiplier: 1.0,  delay: 0.2,  wobble: -10, startY: 0.37 },
+  { left: "88%", sizeMultiplier: 1.0, durationMultiplier: 0.92, delay: 0.85, wobble: 9,  startY: 0.50 },
+  { left: "48%", sizeMultiplier: 1.5, durationMultiplier: 1.08, delay: 0.45, wobble: -7, startY: 0.72 },
 ];
 
 const COLD_BUBBLES: BubbleSpec[] = [
-  { left: "12%", sizeMultiplier: 1.0, durationMultiplier: 1.0, delay: 0.0, wobble: 2 },
-  { left: "30%", sizeMultiplier: 0.8, durationMultiplier: 1.15, delay: 0.6, wobble: -3 },
-  { left: "50%", sizeMultiplier: 1.1, durationMultiplier: 1.05, delay: 0.3, wobble: 2 },
-  { left: "68%", sizeMultiplier: 0.9, durationMultiplier: 1.2, delay: 0.8, wobble: -2 },
-  { left: "85%", sizeMultiplier: 0.7, durationMultiplier: 1.1, delay: 0.45, wobble: 3 },
-  { left: "40%", sizeMultiplier: 1.0, durationMultiplier: 1.0, delay: 1.1, wobble: -2 },
-  { left: "22%", sizeMultiplier: 0.85, durationMultiplier: 1.18, delay: 0.7, wobble: 2 },
+  { left: "12%", sizeMultiplier: 1.0, durationMultiplier: 1.0,  delay: 0.0,  wobble: 6,  startY: 0.15 },
+  { left: "35%", sizeMultiplier: 0.8, durationMultiplier: 1.15, delay: 0.6,  wobble: -8, startY: 0.65 },
+  { left: "55%", sizeMultiplier: 1.1, durationMultiplier: 1.05, delay: 0.3,  wobble: 7,  startY: 0.40 },
+  { left: "75%", sizeMultiplier: 0.9, durationMultiplier: 1.2,  delay: 0.8,  wobble: -6, startY: 0.82 },
+  { left: "90%", sizeMultiplier: 0.7, durationMultiplier: 1.1,  delay: 0.45, wobble: 8,  startY: 0.25 },
+  { left: "45%", sizeMultiplier: 1.0, durationMultiplier: 1.0,  delay: 1.1,  wobble: -7, startY: 0.55 },
+  { left: "25%", sizeMultiplier: 0.85, durationMultiplier: 1.18, delay: 0.7,  wobble: 6,  startY: 0.90 },
 ];
 
 /* ── Inline SVG icons (Phosphor-style, 24×24 viewBox) ─────── */
@@ -362,10 +363,32 @@ export class EcoOneVisualCard extends LitElement {
   /* ── Derived states ─────────────────────────────────────────── */
 
   private get _isOperating(): boolean {
+    // Primary check: explicit operation_status entity
     const s = this._entityState(this._entities.operation_status);
-    if (s === null) return false;
-    const n = this._normalizeComparable(s);
-    return n !== "off" && n !== "standby";
+    if (s !== null) {
+      const n = this._normalizeComparable(s);
+      if (n === "off" || n === "standby") {
+        // Even if operation_status says off, infer "operating" when other
+        // entities are actively reporting valid states (the Omron integration
+        // sometimes reports operation_status=off while the unit is idle but
+        // still powered on and communicating).
+        return this._hasLiveEntityData();
+      }
+      return true;
+    }
+    // Entity missing — fall back to checking if other sensors are alive
+    return this._hasLiveEntityData();
+  }
+
+  /** Returns true when any non-operation entity reports a meaningful state. */
+  private _hasLiveEntityData(): boolean {
+    const heat = this._entityState(this._entities.heating_status);
+    if (heat !== null && heat !== "unavailable" && heat !== "unknown") return true;
+    const supply = this._entityState(this._entities.supply_status);
+    if (supply !== null && supply !== "unavailable" && supply !== "unknown") return true;
+    const rem = this._entityState(this._entities.hot_water_remaining_l);
+    if (rem !== null && rem !== "unavailable" && rem !== "unknown") return true;
+    return false;
   }
 
   /**
@@ -384,7 +407,7 @@ export class EcoOneVisualCard extends LitElement {
   }
 
   private get _isHeating(): boolean {
-    return this._isOperating && this._isHeatingStateActive();
+    return this._isHeatingStateActive();
   }
 
   private get _isSupplying(): boolean {
@@ -517,12 +540,15 @@ export class EcoOneVisualCard extends LitElement {
       } else {
         const seed = i * 2654435761;
         const r = (offset: number) => (((seed + offset * 16807) & 0x7fffffff) % 1000) / 1000;
+        // Golden-ratio based X distribution — guarantees maximal spacing
+        const goldenLeft = ((i * 0.618033988749895) % 1) * 80 + 10;
         bubbles.push({
-          left: `${(r(1) * 90 + 5).toFixed(1)}%`,
+          left: `${goldenLeft.toFixed(1)}%`,
           sizeMultiplier: 0.6 + r(2) * 1.0,
           durationMultiplier: 0.8 + r(3) * 0.5,
           delay: r(4) * 2.0,
-          wobble: (r(5) > 0.5 ? 1 : -1) * (2 + Math.round(r(6) * 4)),
+          wobble: (r(5) > 0.5 ? 1 : -1) * (4 + Math.round(r(6) * 8)),
+          startY: r(7),
         });
       }
     }
@@ -534,10 +560,12 @@ export class EcoOneVisualCard extends LitElement {
       (b) => {
         const size = Math.round(baseSize * b.sizeMultiplier);
         const dur = (baseDuration * b.durationMultiplier).toFixed(2);
+        const durNum = parseFloat(dur);
+        const negDelay = ((b.startY ?? 0) * durNum).toFixed(2);
         return html`
           <span
             class="tank-bubble"
-            style="left:${b.left};width:${size}px;height:${size}px;--d:${dur}s;--delay:${b.delay}s;--ecoone-bubble-wobble:${b.wobble}px;"
+            style="left:${b.left};width:${size}px;height:${size}px;--d:${dur}s;--ecoone-bubble-wobble:${b.wobble}px;animation-delay:-${negDelay}s,-${negDelay}s;"
           ></span>
         `;
       },
@@ -610,6 +638,18 @@ export class EcoOneVisualCard extends LitElement {
     const animFill = this._getAnimatedFill();
     this._applyTankFill(svgContainer, animFill);
     this._applyBubbleClipping(animFill);
+
+    // Hot water pulsing glow — intense when heating, gentle shimmer when idle but operating
+    const hotGroup = svgContainer.querySelector(`#${CSS.escape(this._ids.tankFillHotId)}`) as SVGElement | null;
+    if (hotGroup) {
+      if (this._isHeating) {
+        hotGroup.style.animation = "hot-water-pulse 6s ease-in-out infinite";
+      } else if (this._isOperating) {
+        hotGroup.style.animation = "hot-water-shimmer 8s ease-in-out infinite";
+      } else {
+        hotGroup.style.animation = "none";
+      }
+    }
 
     // Heating indicator (SVG flame + text)
     const heatInd = svgContainer.querySelector("#HeatingIndicator") as SVGElement | null;
@@ -841,8 +881,8 @@ export class EcoOneVisualCard extends LitElement {
       --ecoone-tank-bubble-radius: 26%;
 
       /* ── Hot-zone bubbles (fast, more, larger) ────────────── */
-      --ecoone-hot-bubble-count: 93;
-      --ecoone-hot-bubble-base-size: 4px;
+      --ecoone-hot-bubble-count: 18;
+      --ecoone-hot-bubble-base-size: 5px;
       --ecoone-hot-bubble-base-duration: 3.8s;
       --ecoone-hot-bubble-fill: rgba(255, 240, 220, 0.55);
       --ecoone-hot-bubble-fill-edge: rgba(255, 180, 140, 0.18);
@@ -961,7 +1001,6 @@ export class EcoOneVisualCard extends LitElement {
 
     .tank-bubble {
       --d: 3s;
-      --delay: 0s;
       position: absolute;
       bottom: -5%;
       left: 0;
@@ -982,8 +1021,7 @@ export class EcoOneVisualCard extends LitElement {
       filter: blur(var(--_bl));
       animation-name: ecoone-bubble-rise, ecoone-bubble-wobble;
       animation-duration: var(--d), var(--d);
-      animation-delay: var(--delay), var(--delay);
-      animation-timing-function: ease-in, ease-in-out;
+      animation-timing-function: linear, ease-in-out;
       animation-iteration-count: infinite, infinite;
     }
 
@@ -1085,6 +1123,28 @@ export class EcoOneVisualCard extends LitElement {
       50% { opacity: 1; }
     }
 
+    /* Hot water pulsing glow when actively heating — subtle red shift */
+    @keyframes hot-water-pulse {
+      0%, 100% {
+        filter: brightness(1.0) saturate(1.0) hue-rotate(0deg);
+      }
+      50% {
+        filter: brightness(1.08) saturate(1.15) hue-rotate(-8deg);
+      }
+    }
+
+    /* Gentle shimmer on hot water when NOT heating but still warm */
+    @keyframes hot-water-shimmer {
+      0%, 100% {
+        filter: brightness(1.0);
+        opacity: 0.95;
+      }
+      50% {
+        filter: brightness(1.04);
+        opacity: 1;
+      }
+    }
+
   `;
 
   /* ── Render ─────────────────────────────────────────────────── */
@@ -1127,7 +1187,7 @@ export class EcoOneVisualCard extends LitElement {
 
           <div class="bubble-layer">
             <div
-              class="tank-bubble-field ${heating ? "tank-bubble-field--active" : ""}"
+              class="tank-bubble-field ${this._isOperating ? "tank-bubble-field--active" : ""}"
               data-zone="hot"
               aria-hidden="true"
             >

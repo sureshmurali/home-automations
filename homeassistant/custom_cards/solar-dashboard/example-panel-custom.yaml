@@ -1,0 +1,41 @@
+# Solar Dashboard — panel_custom configuration
+#
+# Add this to your HA configuration.yaml to register the dashboard
+# as a sidebar entry. Then restart Home Assistant.
+#
+# Prerequisites:
+#   1. Deploy solar-dashboard.js to config/www/solar-dashboard/
+#   2. Add this snippet to configuration.yaml
+#   3. Restart HA
+
+panel_custom:
+  - name: solar-dashboard
+    url_path: solar
+    sidebar_title: Solar
+    sidebar_icon: mdi:solar-power
+    module_url: /local/solar-dashboard/solar-dashboard.js
+    embed_iframe: false
+    trust_external_script: true
+    config:
+      title: "Solar Dashboard"
+      image: /local/solar-house-card/assets/home.png
+      battery_entity: sensor.solar_31_remaining_stored_electricity_3
+      solar_power_entity: sensor.solar_31_current_power
+      # grid_entity: sensor.grid_power
+      show_flow_line: true
+      show_fullscreen: true
+      show_clock: true
+      # weather_entity: weather.home
+      # images:
+      #   default: /local/solar-house-card/assets/solar-house-default.png
+      #   sunny: /local/solar-house-card/assets/solar-house-sunny.png
+      positions:
+        solar:
+          left: "48%"
+          top: "14%"
+        battery:
+          left: "93%"
+          top: "53%"
+        grid:
+          left: "9%"
+          top: "18%"

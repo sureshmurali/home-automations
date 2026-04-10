@@ -76,8 +76,8 @@ conditions:
 
   - condition: template
     value_template: >-
-      {{ states(charging_entities[trigger.entity_id]) | lower
-         not in ['charging', 'full'] }}
+      {% set cs = states(charging_entities[trigger.entity_id]) | lower %}
+      {{ not (cs is search('charg') or cs in ['full']) }}
 
   - condition: template
     value_template: >-

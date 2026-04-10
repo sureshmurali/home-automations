@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Solar Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; background: #0a0a0a; }
+    ha-card {
+      display: block;
+      background: var(--ha-card-background, #1c1c1c);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+  <solar-dashboard id="dashboard"></solar-dashboard>
+
+  <script type="module">
+    import './src/solar-dashboard.ts';
+
+    const dashboard = document.getElementById('dashboard');
+
+    dashboard.setConfig({
+      preview: true,
+      title: 'Solar Dashboard',
+      image: './assets/home.png',
+      battery_entity: 'sensor.solar_31_remaining_stored_electricity_3',
+      solar_power_entity: 'sensor.solar_31_current_power',
+      show_flow_line: true,
+      show_fullscreen: true,
+      show_clock: true,
+    });
+  </script>
+</body>
+</html>

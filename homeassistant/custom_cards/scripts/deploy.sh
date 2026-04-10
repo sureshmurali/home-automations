@@ -4,10 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# ── Load .env ──────────────────────────────────────────────────────────
-if [[ -f "$ROOT_DIR/.env" ]]; then
+# ── Load .env from repo root ──────────────────────────────────────────
+REPO_ROOT="$(cd "$ROOT_DIR/../.." && pwd)"
+if [[ -f "$REPO_ROOT/.env" ]]; then
   set -a
-  source "$ROOT_DIR/.env"
+  source "$REPO_ROOT/.env"
   set +a
 fi
 
@@ -88,6 +89,7 @@ CARDS=(
   "bravia-tv-display|bravia-tv-display.js|"
   "bravia-tv-remote|bravia-tv-remote.js|"
   "pi-temp-card|pi-temp-card.js|"
+  "solar-dashboard|solar-dashboard.js|index.html"
 )
 
 # Allow deploying a single card: npm run deploy:card -- solar-house-card
@@ -182,71 +184,16 @@ log_ok "Deployed ${deployed} card(s) to ${SSH_TARGET}:${REMOTE_PATH}"
 log_info "Total time: ${ELAPSED}s"
 echo "🚀 ─────────────────────────────────────────────────────── 🚀"
 
-# ── Post-deploy cache bust ────────────────────────────────────────────
-# Strategy 1: HA REST API — bump ?v= on each resource URL (zero downtime)
-# Strategy 2: Docker restart (fallback, ~30s downtime)
-# Set DEPLOY_RESTART=0 to skip both.
+# ── Post-deploy: always restart HA container ─────────────────────────
+# Set DEPLOY_RESTART=0 to skip.
 
 DEPLOY_RESTART="${DEPLOY_RESTART:-1}"
 
 if [[ "$DEPLOY_RESTART" == "0" ]]; then
   log_info "Cache refresh skipped (DEPLOY_RESTART=0)"
-
-elif [[ -n "$HA_URL" && -n "$HA_TOKEN" ]]; then
-  echo ""
-  log_step "Cache refresh — bumping Lovelace resource versions (zero downtime)"
-
-  VERSION_STAMP="$(date +%s)"
-  RESOURCES_JSON=$(curl -sf -H "Authorization: Bearer ${HA_TOKEN}" \
-    "${HA_URL}/api/config/lovelace/resources" 2>/dev/null || echo "")
-
-  if [[ -z "$RESOURCES_JSON" ]]; then
-    log_warn "Could not fetch Lovelace resources from ${HA_URL} — check HA_URL and HA_TOKEN"
-  else
-    bumped=0
-    for entry in "${CARDS[@]}"; do
-      IFS='|' read -r card_dir js_file _ <<< "$entry"
-      if [[ -n "$FILTER" && "$card_dir" != "$FILTER" ]]; then
-        continue
-      fi
-
-      MATCH_PATH="${card_dir}/${js_file}"
-      RESOURCE_ID=$(echo "$RESOURCES_JSON" | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-for r in data:
-    if '${MATCH_PATH}' in r.get('url', ''):
-        print(r['id'])
-        break
-" 2>/dev/null || echo "")
-
-      if [[ -n "$RESOURCE_ID" ]]; then
-        NEW_URL="/local/${card_dir}/${js_file}?v=${VERSION_STAMP}"
-        HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" -X PUT \
-          -H "Authorization: Bearer ${HA_TOKEN}" \
-          -H "Content-Type: application/json" \
-          "${HA_URL}/api/config/lovelace/resources/${RESOURCE_ID}" \
-          -d "{\"url\": \"${NEW_URL}\", \"type\": \"module\"}" 2>/dev/null || echo "000")
-
-        if [[ "$HTTP_CODE" == "200" || "$HTTP_CODE" == "201" ]]; then
-          log_ok "🔄 ${card_dir} → ?v=${VERSION_STAMP}"
-          bumped=$((bumped + 1))
-        else
-          log_warn "Failed to update ${card_dir} resource (HTTP ${HTTP_CODE})"
-        fi
-      else
-        log_warn "No Lovelace resource found matching ${MATCH_PATH}"
-      fi
-    done
-
-    if [[ $bumped -gt 0 ]]; then
-      log_ok "Cache busted — ${bumped} resource(s) versioned. Browsers will auto-refetch."
-    fi
-  fi
-
 else
   echo ""
-  log_step "Cache refresh — restarting HA container (${HA_CONTAINER})"
+  log_step "Restarting HA container (${HA_CONTAINER}) to pick up new files"
   if do_ssh "docker restart '${HA_CONTAINER}'" &>/dev/null; then
     log_ok "🔄 Container '${HA_CONTAINER}' restarted (~30s for HA to come back)"
     log_info "Hard-refresh your browser (Ctrl+Shift+R / Cmd+Shift+R) to clear browser cache"
