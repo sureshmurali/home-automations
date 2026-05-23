@@ -1,7 +1,7 @@
-alias: Uber Eats - Delivery updates to Alexa
+alias: Rocket Now - Delivery updates to Alexa
 description: >-
-  Announce Uber Eats order-status updates on Alexa when received on the Pixel 6,
-  while filtering out marketing / promotional notifications.
+  Announce Rocket Now order-status updates on Alexa when received on the Pixel
+  6, while filtering out marketing / promotional notifications.
 triggers:
   - trigger: state
     entity_id: sensor.pixel_6_last_notification
@@ -19,7 +19,23 @@ conditions:
   - condition: template
     value_template: |-
       {{ state_attr('sensor.pixel_6_last_notification', 'package')
-         == 'com.ubercab.eats' }}
+         == 'com.cpone.customer' }}
+  - condition: template
+    value_template: |-
+      {% set gid = state_attr('sensor.pixel_6_last_notification',
+                              'group_id') | default('') %}
+      {{ 'g:Aggregate_' not in gid and 'g:summary' not in gid }}
+  - condition: template
+    value_template: |-
+      {% set title = state_attr('sensor.pixel_6_last_notification',
+                                'android.title')   | default('') %}
+      {% set text  = state_attr('sensor.pixel_6_last_notification',
+                                'android.text')    | default('') %}
+      {% set big   = state_attr('sensor.pixel_6_last_notification',
+                                'android.bigText') | default('') %}
+      {% set sub   = state_attr('sensor.pixel_6_last_notification',
+                                'android.subText') | default('') %}
+      {{ (title ~ text ~ big ~ sub) | trim | length > 0 }}
   - condition: template
     value_template: |-
       {% set ch = state_attr('sensor.pixel_6_last_notification',
@@ -30,38 +46,28 @@ conditions:
       {% set ch = state_attr('sensor.pixel_6_last_notification',
                              'channel_id') | default('') | lower %}
       {% set title = (state_attr('sensor.pixel_6_last_notification',
-                                 'android.title') | default('')) | string %}
-      {% set title = '' if title in ['null', 'None', 'unknown'] else title | lower %}
+                                 'android.title') | default('')) | lower %}
       {% set text = (state_attr('sensor.pixel_6_last_notification',
-                                'android.text') | default('')) | string %}
-      {% set text = '' if text in ['null', 'None', 'unknown'] else text | lower %}
-      {% set has_custom_view = state_attr('sensor.pixel_6_last_notification',
-                                          'android.contains.customView') | default(false) %}
-      {% set blob = title ~ ' ' ~ text %}
-      {% set ns = namespace(kw=false) %}
-      {% for k in order_keywords %}
+                                'android.text') | default('')) | lower %}
+      {% set blob = title ~ ' ' ~ text %} {% set ns = namespace(kw=false) %} {%
+      for k in order_keywords %}
         {% if k | lower in blob %}{% set ns.kw = true %}{% endif %}
-      {% endfor %}
-      {{ ch in order_channel_ids or ns.kw or has_custom_view }}
+      {% endfor %} {{ ch in order_channel_ids or ns.kw }}
   - condition: template
     value_template: >-
       {% set title = (state_attr('sensor.pixel_6_last_notification',
-                                 'android.title') | default('')) | string %}
-      {% set title = '' if title in ['null', 'None', 'unknown'] else title | lower %}
+                                 'android.title') | default('')) | lower %}
       {% set text = (state_attr('sensor.pixel_6_last_notification',
-                                'android.text') | default('')) | string %}
-      {% set text = '' if text in ['null', 'None', 'unknown'] else text | lower %}
-      {% set blob = title ~ ' ' ~ text %}
-      {% set ns = namespace(hit=false) %}
-      {% for k in promo_keywords %}
+                                'android.text') | default('')) | lower %}
+      {% set blob = title ~ ' ' ~ text %} {% set ns = namespace(hit=false) %} {%
+      for k in promo_keywords %}
         {% if k | lower in blob %}{% set ns.hit = true %}{% endif %}
-      {% endfor %}
-      {{ not ns.hit }}
+      {% endfor %} {{ not ns.hit }}
 actions:
   - action: script.alexa_say
     data:
       target: "{{ alexa_target }}"
-      message: "Notification from Uber Eats"
+      message: "Notification from Rocket Now"
   - delay:
       seconds: "{{ cooldown_seconds }}"
 mode: queued
@@ -78,20 +84,21 @@ variables:
   active_start: "00:00:00"
   active_end: "23:59:59"
   order_channel_ids:
-    - eats_notification_channel_your_order_channels
+    - eats_message
     - order_updates
     - order_status
     - orders
+    - order
     - delivery
     - delivery_updates
     - active_orders
-    - eats_orders
   promo_channel_ids:
     - marketing
     - promotions
     - promos
     - offers
     - recommendations
+    - news
   order_keywords:
     - your order
     - on the way
@@ -101,7 +108,6 @@ variables:
     - picked up
     - pick up
     - preparing
-    - getting ready
     - courier
     - rider
     - driver is
@@ -109,6 +115,21 @@ variables:
     - is on its way
     - eta
     - minutes away
+    - 配達中
+    - 配達完了
+    - 配達済み
+    - お届け
+    - 出発
+    - 到着
+    - 到着予定
+    - 受付
+    - 準備中
+    - 調理中
+    - ピックアップ
+    - 注文
+    - 注文確定
+    - 配達員
+    - ロケットナウ
   promo_keywords:
     - "% off"
     - $ off
@@ -124,5 +145,17 @@ variables:
     - hungry
     - cravings
     - recommended for you
+    - クーポン
+    - キャンペーン
+    - セール
+    - 割引
+    - お得
+    - 無料
+    - 期間限定
+    - おすすめ
+    - 新着
+    - 新店
+    - 新規
+    - 配達料無料
   alexa_target: hall
   cooldown_seconds: 10
