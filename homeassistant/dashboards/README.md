@@ -35,3 +35,11 @@ The YAML contains display logic only, not reminder text or Alexa credentials.
 It backs up the dashboard, not the Alexa integration or Amazon's reminders.
 
 Reference: [Home Assistant Markdown cards](https://www.home-assistant.io/dashboards/markdown/).
+
+## Shiratori earthquakes
+
+`shiratori_earthquakes.yaml` backs up the **Earthquakes** dashboard at
+`/shiratori-earthquakes/history`. It reads the earthquake feed sensor's persistent
+history, displays the latest 25 records and monitoring health, and explains alert
+thresholds. See `../packages/SHIRATORI_EARTHQUAKE.md` for installation and history
+backup instructions. Use the dashboard Raw configuration editor to apply edits.

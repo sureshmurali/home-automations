@@ -1,0 +1,56 @@
+title: Shiratori Earthquakes
+views:
+  - title: Earthquake history
+    path: history
+    icon: mdi:earth
+    cards:
+      - type: markdown
+        content: |
+          # Earthquakes near Shiratori
+          Local shaking reported at **Tateishi, Katsushika** · Japan time.
+
+          {% set checked = as_timestamp(state_attr('sensor.shiratori_earthquake_feed', 'checked_at'), 0) %}
+          {% if is_state('sensor.shiratori_earthquake_feed', 'ok') and as_timestamp(now()) - checked < 120 %}
+          **Monitoring is healthy** · Checked {{ checked | timestamp_custom('%d %b %H:%M:%S', true) }}
+          {% else %}
+          **Monitoring needs attention** · The earthquake feed is unavailable or stale. History below is retained.
+          {% endif %}
+
+          **{{ state_attr('sensor.shiratori_earthquake_feed', 'history_count') | int(0) }} recorded events** · Showing the latest 25.
+
+          Includes weaker local shaking even when it does not trigger an alert. Earthquakes must be within 500 km. Records were initially imported from the available JMA feed; older history may be incomplete.
+      - type: markdown
+        title: Alert rules
+        content: |
+          | Local shindo | Hue lights | Alexa hours |
+          | --- | --- | --- |
+          | 1–2 | No alert | Silent |
+          | 3 | Yellow · 5 seconds | 10am–8pm |
+          | 4 | Orange · 10 seconds | 8am–10pm |
+          | 5-lower and above | Red · 30 seconds | 8am–10pm |
+
+          Lights alert at any hour for shindo 3+. Alexa stays silent outside its window. This uses published observations and may arrive after shaking begins.
+      - type: markdown
+        title: Local earthquake history
+        content: |
+          {% set records = state_attr('sensor.shiratori_earthquake_feed', 'history') or [] %}
+          {% for e in records %}
+          ### {{ as_timestamp(e.occurred_at) | timestamp_custom('%d %b %Y · %H:%M', true) }} — Shindo {{ e.intensity | replace('-', '-lower') | replace('+', '-upper') }}
+          **{{ e.region | e }}** · Magnitude {{ e.magnitude }} · {{ e.distance_km }} km away
+
+          {% if e.get('alert_status') == 'completed' %}
+          Alert sequence completed{% if e.get('speech_window') == 'quiet' %} · Alexa silent (quiet hours){% else %} · Alexa speech requested{% endif %}.
+          {% elif e.get('alert_status') == 'started' %}
+          Alert was started; completion has not been recorded.
+          {% elif e.tier == 0 %}
+          **No alert: below the shindo 3 threshold.**
+          {% else %}
+          Meets the alert threshold; no recorded alert execution. This may be a historical import.
+          {% endif %}
+
+          [JMA report]({{ e.source_url }}) · Observation: Tateishi
+
+          ---
+          {% else %}
+          No local earthquakes have been recorded yet.
+          {% endfor %}
