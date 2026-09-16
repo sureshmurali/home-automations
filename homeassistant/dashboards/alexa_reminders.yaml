@@ -1,0 +1,131 @@
+title: Alexa Reminders
+views:
+- title: Upcoming
+  path: upcoming
+  icon: mdi:reminder
+  type: masonry
+  cards:
+  - type: markdown
+    content: |-
+      {%- set sources = states.sensor | selectattr('entity_id', 'search', '_next_reminder$') | list -%}
+      {%- set ns = namespace(times=[]) -%}
+      {%- for s in sources -%}
+      {%- set t = as_timestamp(s.attributes.get('process_timestamp'), 0) -%}
+      {%- if t > 0 -%}{%- set ns.times = ns.times + [t] -%}{%- endif -%}
+      {%- endfor -%}
+      # Alexa Reminders
+      Upcoming reminders across your Echo devices, in **Japan time**.
+
+      {% if ns.times %}Last Alexa data update: **{{ (ns.times | min) | timestamp_custom('%d %b · %H:%M', true) }}**.{% else %}Waiting for Alexa reminder data.{% endif %}
+
+      View only · Manage reminders in the Alexa app or by voice. Changes can take a few minutes to appear.
+
+      Recurring means repeating reminders; Alexa Routine announcements are not included.
+  - type: markdown
+    title: Recurring reminders
+    content: |-
+      {%- set sources = states.sensor | selectattr('entity_id', 'search', '_next_reminder$') | list -%}
+      {%- set ns = namespace(rows=[], seen=[], missing=[]) -%}
+      {%- for s in sources -%}
+        {%- set a = s.attributes -%}
+        {%- set age = as_timestamp(now()) - as_timestamp(a.get('process_timestamp'), 0) -%}
+        {%- if s.state == 'unavailable' or age > 1800 -%}
+          {%- set ns.missing = ns.missing + [a.get('friendly_name', s.entity_id)] -%}
+        {%- else -%}
+          {%- set reminders = a.get('sorted_active', []) -%}
+          {%- if reminders is string -%}{%- set reminders = reminders | from_json([]) -%}{%- endif -%}
+          {%- for r in reminders or [] -%}
+            {%- set rule = r.get('rRuleData') or {} -%}
+            {%- set pattern = r.get('recurringPattern') or '' -%}
+            {%- set rules = rule.get('recurrenceRules') or [] -%}
+            {%- set repeated = (pattern not in ['', 'ONCE', 'NONE']) or (rules | length > 0) or (rule.get('flexibleRecurringPatternType') not in [none, '', 'ONCE', 'NONE']) or (rule.get('frequency') not in [none, '', 'ONCE', 'NONE']) -%}
+            {%- set time = namespace(candidates=[]) -%}
+            {%- for t in rule.get('nextTriggerTimes') or [] -%}
+              {%- set stamp = as_timestamp(t, 0) -%}
+              {%- if stamp > as_timestamp(now()) -%}{%- set time.candidates = time.candidates + [stamp] -%}{%- endif -%}
+            {%- endfor -%}
+            {%- if not time.candidates -%}
+              {%- set stamp = as_timestamp(r.get('date_time'), 0) or ((r.get('alarmTime') or 0) | float(0) / 1000) -%}
+              {%- if stamp > as_timestamp(now()) -%}{%- set time.candidates = [stamp] -%}{%- endif -%}
+            {%- endif -%}
+            {%- set key = r.get('id') or r.get('notificationIndex') -%}
+            {%- if r.get('status') == 'ON' and time.candidates and key not in ns.seen -%}
+              {%- set ruletext = rules | join(' ') -%}
+              {%- set repeat_label = 'Daily' if 'FREQ=DAILY' in ruletext and 'INTERVAL=1;' in ruletext else 'Weekly' if 'FREQ=WEEKLY' in ruletext else 'Monthly' if 'FREQ=MONTHLY' in ruletext else pattern | replace('_', ' ') | title if pattern else 'Repeating' -%}
+              {%- set ns.rows = ns.rows + [dict(label=r.get('reminderLabel') or 'Untitled reminder', time=time.candidates|min, device=a.get('friendly_name', s.entity_id)|replace(' Next reminder', ''), repeated=repeated, repeat_label=repeat_label)] -%}
+              {%- set ns.seen = ns.seen + [key] -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- set rows = ns.rows | selectattr('repeated', 'equalto', true) | sort(attribute='time') | list -%}
+      <ha-icon icon="mdi:calendar-sync"></ha-icon> **{{ rows | length }} upcoming**
+      {% if not sources %}
+      Reminder data is not available. Check the Alexa Media Player connection.
+      {% elif ns.missing %}
+      Some Alexa devices have unavailable or stale data. This list may be incomplete.
+      {% endif %}
+      {% for r in rows %}
+      ### {{ r.label | e }}
+      **{{ r.time | timestamp_custom('%a, %d %b · %H:%M', true) }}**
+
+      {{ r.device | e }}{% if r.repeated %} · {{ r.repeat_label }}{% endif %}
+
+      ---
+      {% else %}
+      {% if sources and not ns.missing %}No upcoming recurring reminders.{% else %}No upcoming recurring reminders in the available data.{% endif %}
+      {% endfor %}
+  - type: markdown
+    title: One-time reminders
+    content: |-
+      {%- set sources = states.sensor | selectattr('entity_id', 'search', '_next_reminder$') | list -%}
+      {%- set ns = namespace(rows=[], seen=[], missing=[]) -%}
+      {%- for s in sources -%}
+        {%- set a = s.attributes -%}
+        {%- set age = as_timestamp(now()) - as_timestamp(a.get('process_timestamp'), 0) -%}
+        {%- if s.state == 'unavailable' or age > 1800 -%}
+          {%- set ns.missing = ns.missing + [a.get('friendly_name', s.entity_id)] -%}
+        {%- else -%}
+          {%- set reminders = a.get('sorted_active', []) -%}
+          {%- if reminders is string -%}{%- set reminders = reminders | from_json([]) -%}{%- endif -%}
+          {%- for r in reminders or [] -%}
+            {%- set rule = r.get('rRuleData') or {} -%}
+            {%- set pattern = r.get('recurringPattern') or '' -%}
+            {%- set rules = rule.get('recurrenceRules') or [] -%}
+            {%- set repeated = (pattern not in ['', 'ONCE', 'NONE']) or (rules | length > 0) or (rule.get('flexibleRecurringPatternType') not in [none, '', 'ONCE', 'NONE']) or (rule.get('frequency') not in [none, '', 'ONCE', 'NONE']) -%}
+            {%- set time = namespace(candidates=[]) -%}
+            {%- for t in rule.get('nextTriggerTimes') or [] -%}
+              {%- set stamp = as_timestamp(t, 0) -%}
+              {%- if stamp > as_timestamp(now()) -%}{%- set time.candidates = time.candidates + [stamp] -%}{%- endif -%}
+            {%- endfor -%}
+            {%- if not time.candidates -%}
+              {%- set stamp = as_timestamp(r.get('date_time'), 0) or ((r.get('alarmTime') or 0) | float(0) / 1000) -%}
+              {%- if stamp > as_timestamp(now()) -%}{%- set time.candidates = [stamp] -%}{%- endif -%}
+            {%- endif -%}
+            {%- set key = r.get('id') or r.get('notificationIndex') -%}
+            {%- if r.get('status') == 'ON' and time.candidates and key not in ns.seen -%}
+              {%- set ruletext = rules | join(' ') -%}
+              {%- set repeat_label = 'Daily' if 'FREQ=DAILY' in ruletext and 'INTERVAL=1;' in ruletext else 'Weekly' if 'FREQ=WEEKLY' in ruletext else 'Monthly' if 'FREQ=MONTHLY' in ruletext else pattern | replace('_', ' ') | title if pattern else 'Repeating' -%}
+              {%- set ns.rows = ns.rows + [dict(label=r.get('reminderLabel') or 'Untitled reminder', time=time.candidates|min, device=a.get('friendly_name', s.entity_id)|replace(' Next reminder', ''), repeated=repeated, repeat_label=repeat_label)] -%}
+              {%- set ns.seen = ns.seen + [key] -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- set rows = ns.rows | selectattr('repeated', 'equalto', false) | sort(attribute='time') | list -%}
+      <ha-icon icon="mdi:calendar-clock"></ha-icon> **{{ rows | length }} upcoming**
+      {% if not sources %}
+      Reminder data is not available. Check the Alexa Media Player connection.
+      {% elif ns.missing %}
+      Some Alexa devices have unavailable or stale data. This list may be incomplete.
+      {% endif %}
+      {% for r in rows %}
+      ### {{ r.label | e }}
+      **{{ r.time | timestamp_custom('%a, %d %b · %H:%M', true) }}**
+
+      {{ r.device | e }}{% if r.repeated %} · {{ r.repeat_label }}{% endif %}
+
+      ---
+      {% else %}
+      {% if sources and not ns.missing %}No upcoming one-time reminders.{% else %}No upcoming one-time reminders in the available data.{% endif %}
+      {% endfor %}
