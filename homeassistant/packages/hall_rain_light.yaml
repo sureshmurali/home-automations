@@ -1,0 +1,123 @@
+# Enable under homeassistant: packages: !include_dir_named packages
+# Open-Meteo model estimates for the configured home in Katsushika, Tokyo.
+rest:
+  - resource: "https://api.open-meteo.com/v1/forecast?latitude=35.7497&longitude=139.8438&current=rain,showers,weather_code&timeformat=unixtime"
+    scan_interval: 300
+    timeout: 30
+    sensor:
+      - name: Katsushika rain intensity
+        unique_id: katsushika_rain_intensity
+        unit_of_measurement: "mm/h"
+        device_class: precipitation_intensity
+        state_class: measurement
+        icon: mdi:weather-rainy
+        value_template: >-
+          {% set c = value_json.get('current', {}) %}
+          {% if c.get('rain') is number and c.get('showers') is number
+                and c.get('interval', 0) > 0 and c.get('time') is number
+                and -300 <= as_timestamp(now()) - c.time < 3600 %}
+            {{ ((c.rain + c.showers) * 3600 / c.interval) | round(2) }}
+          {% else %}{{ none }}{% endif %}
+        json_attributes_path: "$.current"
+        json_attributes:
+          - time
+          - interval
+          - rain
+          - showers
+          - weather_code
+
+# No initial value: the previous light setting survives Home Assistant restarts.
+input_text:
+  hall_rain_previous_setting:
+    name: Hall rain previous setting
+    max: 255
+    mode: text
+    icon: mdi:content-save
+
+automation:
+  - id: hall_light_katsushika_rain
+    alias: Hall light - Katsushika rain
+    description: >-
+      Blue Hall Hue floor light during rain. Estimated rainfall below 1/2.5/7.5/15
+      mm per hour gives 15/30/55/80 percent brightness; 15+ gives 100 percent.
+      Restore the previous setting after 10 dry minutes. Poll every 5 minutes.
+      Ignore missing or stale weather data.
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: sensor.katsushika_rain_intensity
+      - trigger: time_pattern
+        minutes: "/5"
+      - trigger: homeassistant
+        event: start
+      - trigger: state
+        entity_id: light.signe_gradient_floor_1
+        from: unavailable
+      - trigger: state
+        entity_id: light.signe_gradient_floor_1
+        from: unknown
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ is_number(states('sensor.katsushika_rain_intensity'))
+             and states('sensor.katsushika_rain_intensity') | float >= 0
+             and -300 <= as_timestamp(now()) - (state_attr('sensor.katsushika_rain_intensity', 'time') | float(0)) < 3600
+             and states('light.signe_gradient_floor_1') in ['on', 'off']
+             and states('input_text.hall_rain_previous_setting') != 'unavailable' }}
+    actions:
+      - variables:
+          rate: "{{ states('sensor.katsushika_rain_intensity') | float }}"
+          saved: "{{ states('input_text.hall_rain_previous_setting') | from_json({}) }}"
+      - choose:
+          - conditions: "{{ rate > 0 }}"
+            sequence:
+              - if: "{{ saved.get('state') not in ['on', 'off'] }}"
+                then:
+                  - action: input_text.set_value
+                    target:
+                      entity_id: input_text.hall_rain_previous_setting
+                    data:
+                      value: >-
+                        {% set e = 'light.signe_gradient_floor_1' %}
+                        {% set d = dict(brightness=state_attr(e, 'brightness') | int(1)) %}
+                        {% if state_attr(e, 'color_mode') == 'color_temp' %}
+                          {% set d = dict(d, color_temp_kelvin=state_attr(e, 'color_temp_kelvin')) %}
+                        {% elif state_attr(e, 'xy_color') is not none %}
+                          {% set d = dict(d, xy_color=state_attr(e, 'xy_color')) %}
+                        {% endif %}
+                        {% if state_attr(e, 'effect') is not none %}
+                          {% set d = dict(d, effect=state_attr(e, 'effect')) %}
+                        {% endif %}
+                        {{ dict(state=states(e), data=d) | to_json }}
+              - action: light.turn_on
+                target:
+                  entity_id: light.signe_gradient_floor_1
+                data:
+                  hs_color: [240, 100]
+                  effect: "off"
+                  brightness_pct: >-
+                    {{ 15 if rate < 1 else 30 if rate < 2.5 else 55 if rate < 7.5 else 80 if rate < 15 else 100 }}
+                  transition: 3
+          - conditions:
+              - condition: template
+                value_template: >-
+                  {{ rate == 0 and saved.get('state') in ['on', 'off']
+                     and as_timestamp(now()) - as_timestamp(states.sensor.katsushika_rain_intensity.last_changed) >= 600 }}
+            sequence:
+              - if: "{{ saved.state == 'off' }}"
+                then:
+                  - action: light.turn_off
+                    target:
+                      entity_id: light.signe_gradient_floor_1
+                    data:
+                      transition: 3
+                else:
+                  - action: light.turn_on
+                    target:
+                      entity_id: light.signe_gradient_floor_1
+                    data: "{{ dict(saved.data, transition=3) }}"
+              - action: input_text.set_value
+                target:
+                  entity_id: input_text.hall_rain_previous_setting
+                data:
+                  value: ""
