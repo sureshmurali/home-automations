@@ -25,9 +25,9 @@ views:
           | Local shindo | Hue lights | Alexa hours |
           | --- | --- | --- |
           | 1–2 | No alert | Silent |
-          | 3 | Yellow · 5 seconds | 10am–8pm |
-          | 4 | Orange · 10 seconds | 8am–10pm |
-          | 5-lower and above | Red · 30 seconds | 8am–10pm |
+          | 3 | Yellow pulse · 5 seconds | 10am–8pm |
+          | 4 | Orange pulse · 10 seconds | 8am–10pm |
+          | 5-lower and above | Red pulse · 30 seconds | 8am–10pm |
 
           Lights alert at any hour for shindo 3+. Alexa stays silent outside its window. This uses published observations and may arrive after shaking begins.
       - type: markdown

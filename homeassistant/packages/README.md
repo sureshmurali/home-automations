@@ -58,3 +58,17 @@ Local edits and GitHub commits do not automatically deploy to the Pi. This is a
 backup of this automation's configuration; it does not contain Home Assistant's
 integrations, credentials, database, or the runtime saved light setting. Keep a
 full Home Assistant backup separately for complete server recovery.
+
+## Rainfall motion
+
+While it is raining, **Hall light - rainfall shimmer** runs a short blue brightness
+animation every ten seconds: three brief rises followed by slower fades. The
+original rain mapping sets the peak (15/30/55/80/100%); each glimmer fades to 55%
+of that peak without switching off. This simulates a rain-like shimmer rather
+than vertically moving drops along individual gradient segments.
+
+`script.hall_rain_shimmer` controls the motion. It checks the earthquake flag
+before each change. Earthquake warnings stop this script and pause its automation,
+then restore the lamp and resume rain control afterwards. Disabling the main
+**Hall light - Katsushika rain** automation also prevents new shimmer runs.
+Missing/stale rain data and dry weather prevent new shimmer runs.

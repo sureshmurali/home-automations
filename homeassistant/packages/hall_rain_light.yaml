@@ -63,7 +63,8 @@ automation:
              and states('sensor.katsushika_rain_intensity') | float >= 0
              and -300 <= as_timestamp(now()) - (state_attr('sensor.katsushika_rain_intensity', 'time') | float(0)) < 3600
              and states('light.signe_gradient_floor_1') in ['on', 'off']
-             and states('input_text.hall_rain_previous_setting') != 'unavailable' }}
+             and states('input_text.hall_rain_previous_setting') != 'unavailable'
+             and not is_state('input_boolean.earthquake_alert_active', 'on') }}
     actions:
       - variables:
           rate: "{{ states('sensor.katsushika_rain_intensity') | float }}"
@@ -121,3 +122,82 @@ automation:
                   entity_id: input_text.hall_rain_previous_setting
                 data:
                   value: ""
+
+  - id: hall_light_rain_shimmer
+    alias: Hall light - rainfall shimmer
+    description: Soft blue raindrop-like brightness movement while rain data is fresh.
+    mode: single
+    triggers:
+      - trigger: time_pattern
+        seconds: "/10"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.earthquake_alert_active
+        state: 'off'
+      - condition: state
+        entity_id: automation.hall_light_katsushika_rain
+        state: 'on'
+      - condition: state
+        entity_id: light.signe_gradient_floor_1
+        state: 'on'
+      - condition: template
+        value_template: >-
+          {{ states('sensor.katsushika_rain_intensity') | float(0) > 0
+             and -300 <= as_timestamp(now()) - (state_attr('sensor.katsushika_rain_intensity','time') | float(0)) < 3600
+             and (states('input_text.hall_rain_previous_setting') | from_json({})).get('state') in ['on','off'] }}
+    actions:
+      - action: script.hall_rain_shimmer
+        data:
+          brightness_pct: >-
+            {% set rate = states('sensor.katsushika_rain_intensity') | float(0) %}
+            {{ 15 if rate < 1 else 30 if rate < 2.5 else 55 if rate < 7.5 else 80 if rate < 15 else 100 }}
+
+script:
+  hall_rain_shimmer:
+    alias: Hall light - blue rainfall shimmer
+    description: Three gentle blue glimmers; brightness movement, not vertical pixel animation.
+    mode: single
+    fields:
+      brightness_pct:
+        default: 15
+        selector:
+          number:
+            min: 1
+            max: 100
+    sequence:
+      - condition: state
+        entity_id: input_boolean.earthquake_alert_active
+        state: 'off'
+      - variables:
+          peak: "{{ [100, [1, brightness_pct | default(15) | int] | max] | min }}"
+      - repeat:
+          count: 3
+          sequence:
+            - condition: state
+              entity_id: input_boolean.earthquake_alert_active
+              state: 'off'
+            - action: light.turn_on
+              target: {entity_id: light.signe_gradient_floor_1}
+              data:
+                hs_color: [240, 100]
+                effect: 'off'
+                brightness_pct: "{{ peak }}"
+                transition: 0.25
+            - delay: {milliseconds: 350}
+            - condition: state
+              entity_id: input_boolean.earthquake_alert_active
+              state: 'off'
+            - action: light.turn_on
+              target: {entity_id: light.signe_gradient_floor_1}
+              data:
+                brightness_pct: "{{ [1, (peak * 0.55) | round(0) | int] | max }}"
+                transition: 1.2
+            - delay: {milliseconds: 1400}
+      - condition: state
+        entity_id: input_boolean.earthquake_alert_active
+        state: 'off'
+      - action: light.turn_on
+        target: {entity_id: light.signe_gradient_floor_1}
+        data:
+          brightness_pct: "{{ peak }}"
+          transition: 0.6

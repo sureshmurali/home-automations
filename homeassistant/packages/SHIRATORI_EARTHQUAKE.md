@@ -7,21 +7,19 @@ of the configured home coordinates. Magnitude does not select the alert tier.
 
 | Local shindo | All four Hue lights | Alexa speech, Japan time |
 | --- | --- | --- |
-| 3 | Yellow for 5 seconds | 10:00–19:59 |
-| 4 | Orange for 10 seconds | 08:00–21:59 |
-| 5-lower, 5-upper, 6-lower, 6-upper, 7 | Red for 30 seconds | 08:00–21:59 |
+| 3 | Yellow pulses for 5 seconds | 10:00–19:59 |
+| 4 | Orange pulses for 10 seconds | 08:00–21:59 |
+| 5-lower, 5-upper, 6-lower, 6-upper, 7 | Red pulses for 30 seconds | 08:00–21:59 |
 
 Alexa says **“Earthquake warning: local intensity X.”** on the Hall Echo Dot,
-Bedroom Echo Dot, and Echo Show. Lights alert at all hours. The flash target is
-250 ms on and 250 ms off (two blinks per second), paced against elapsed time.
-A dedicated Hue zone named **Earthquake Alert** (`light.earthquake_alert`) sends
-one command to all four lights per change. The silent five-second integration
-test completed all ten commanded blink cycles. Hue bridge, Zigbee, and Home
-Assistant scheduling can still reduce the actual blink
-rate or cause lamps to be slightly out of sync. This is not a precision strobe.
+Bedroom Echo Dot, and Echo Show. Lights alert at all hours. The warning effect is a smooth brightness pulse: 20% → 100% → 20%, with
+half-second transitions (about one pulse per second). The lamps remain lit
+throughout. The same 5/10/30-second durations and severity colors apply.
+A dedicated Hue zone named **Earthquake Alert** (`light.earthquake_alert`) controls
+all four lights together. Actual timing depends on the Hue bridge and network.
 
 The automation saves each lamp's state, brightness, color, and supported effect;
-pauses the five competing solar/desk/rain automations; then restores the saved
+pauses the six competing solar/desk/rain automations; then restores the saved
 settings and previously enabled automations. Snapshot helpers persist across HA
 restarts. A recovery automation runs on startup if interrupted and after an alert
 has remained active for two minutes. Lamps unavailable during recovery may not
@@ -66,7 +64,7 @@ files are kept in `/config/earthquake_cache/` (at most 1,000).
 On a replacement Hue setup, create an **Earthquake Alert** zone in the Hue app
 containing the four lights and ensure Home Assistant exposes it as
 `light.earthquake_alert`. Without it, the script falls back to individual lights,
-which tested slower (about seven commanded cycles in five seconds).
+which may make the pulses less synchronized.
 
 Update light, Alexa, and competing-automation entity IDs if restoring to a new
 installation. Home Assistant's timezone must be Asia/Tokyo. These source files
@@ -80,7 +78,7 @@ python3 -m unittest discover -s tests -p test_shiratori_earthquakes.py -v
 
 For an intentional silent yellow light test, run script
 `script.shiratori_earthquake_alert` with `intensity: "3"` and `test_mode: true`.
-This flashes real lights but does not speak or modify the seen-event history.
+This pulses real lights but does not speak or modify the seen-event history.
 
 ## Persistent history and dashboard
 

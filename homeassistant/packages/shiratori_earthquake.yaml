@@ -57,6 +57,7 @@ script:
             - automation.pc_desk_hue_on_when_external_display_connected
             - automation.pc_desk_hue_off_when_no_external_display
             - automation.hall_light_katsushika_rain
+            - automation.hall_light_rainfall_shimmer
       - repeat:
           for_each: "{{ lamps }}"
           sequence:
@@ -94,7 +95,7 @@ script:
 
   shiratori_earthquake_alert:
     alias: Earthquake - Hue lights and Alexa
-    description: Local shindo warning; 250 ms on/off target, with network-dependent timing.
+    description: Local shindo warning; Smooth brightness pulses between 20 and 100 percent.
     mode: single
     fields:
       intensity:
@@ -122,13 +123,14 @@ script:
             - automation.pc_desk_hue_on_when_external_display_connected
             - automation.pc_desk_hue_off_when_no_external_display
             - automation.hall_light_katsushika_rain
+            - automation.hall_light_rainfall_shimmer
           enabled_mask: >-
             {% set ns = namespace(mask='') %}
             {% for e in competing %}{% if is_state(e, 'on') %}{% set ns.mask = ns.mask ~ loop.index0 %}{% endif %}{% endfor %}
             {{ ns.mask }}
           available_lights: >-
             {{ expand(lamps | map(attribute='light') | list) | selectattr('state', 'in', ['on','off']) | map(attribute='entity_id') | list }}
-          blink_target: >-
+          pulse_target: >-
             {{ ['light.earthquake_alert'] if states('light.earthquake_alert') in ['on','off'] else available_lights }}
       - action: input_text.set_value
         target: {entity_id: input_text.earthquake_paused_automations}
@@ -165,6 +167,7 @@ script:
             - script.solar_battery_kitchen_mini_light_mapped_brightness
             - script.pc_hue_desk_on
             - script.pc_hue_desk_off
+            - script.hall_rain_shimmer
       - parallel:
           - sequence:
               - if: >-
@@ -187,34 +190,34 @@ script:
                   - action: light.turn_on
                     continue_on_error: true
                     target:
-                      entity_id: "{{ blink_target }}"
+                      entity_id: "{{ pulse_target }}"
                     data:
                       hs_color: "{{ color }}"
-                      brightness_pct: 100
+                      brightness_pct: 20
                       transition: 0
                   - variables:
                       started: "{{ as_timestamp(now()) }}"
                   - repeat:
-                      count: "{{ duration * 2 }}"
+                      count: "{{ duration }}"
                       sequence:
-                        - if: "{{ repeat.index > 1 and as_timestamp(now()) < started + duration }}"
+                        - if: "{{ as_timestamp(now()) < started + duration }}"
                           then:
                             - action: light.turn_on
                               continue_on_error: true
                               target:
-                                entity_id: "{{ blink_target }}"
-                              data: {brightness_pct: 100, transition: 0}
+                                entity_id: "{{ pulse_target }}"
+                              data: {brightness_pct: 100, transition: 0.5}
                         - delay:
-                            milliseconds: "{{ [0, ((started + (repeat.index - 1) * 0.5 + 0.25 - as_timestamp(now())) * 1000) | int] | max }}"
+                            milliseconds: "{{ [0, ((started + repeat.index - 0.5 - as_timestamp(now())) * 1000) | int] | max }}"
                         - if: "{{ as_timestamp(now()) < started + duration }}"
                           then:
-                            - action: light.turn_off
+                            - action: light.turn_on
                               continue_on_error: true
                               target:
-                                entity_id: "{{ blink_target }}"
-                              data: {transition: 0}
+                                entity_id: "{{ pulse_target }}"
+                              data: {brightness_pct: 20, transition: 0.5}
                         - delay:
-                            milliseconds: "{{ [0, ((started + repeat.index * 0.5 - as_timestamp(now())) * 1000) | int] | max }}"
+                            milliseconds: "{{ [0, ((started + repeat.index - as_timestamp(now())) * 1000) | int] | max }}"
       - action: script.shiratori_earthquake_restore
 
 
