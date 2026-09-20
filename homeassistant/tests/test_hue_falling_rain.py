@@ -29,6 +29,16 @@ class RainFrames(unittest.TestCase):
                 for color in colors[::100]:
                     self.assertTrue(all(0<=v<=65535 for rgb in r.frame(1,20,color=color) for v in rgb))
 
+    def test_wire_rgb_preserves_dim_channels(self):
+        import struct
+        from types import SimpleNamespace
+        for value in [0, 1, 100, 254, 255, 256, 257, 65535]:
+            cmd=SimpleNamespace(channel_id=2, red=value, green=value, blue=65535)
+            self.assertEqual(struct.unpack('!BHHH', r.encode_channels([cmd])), (2,value,value,65535))
+        for color in r.PALETTE:
+            self.assertGreater(color[2], color[1])
+            self.assertGreater(color[2], color[0])
+
     def test_reverse_and_bounds(self):
         for rate in [0.4,3,20]:
             for t in [0,0.2,0.5,1.2,3]:

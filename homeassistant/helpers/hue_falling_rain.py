@@ -9,6 +9,7 @@ from pathlib import Path
 import signal
 import ssl
 import subprocess
+import struct
 import sys
 import time
 import urllib.request
@@ -20,7 +21,26 @@ STATUS = ROOT / 'hue_rain_status.json'
 SNAPSHOT = ROOT / 'hue_rain_snapshot.json'
 STOP = False
 PAUSE = ROOT / "hue_rain_paused_until"
-PALETTE = ((0.12, 0.45, 1.0), (0.0, 0.025, 0.40), (0.0, 0.85, 0.65))
+PALETTE = ((0.04, 0.22, 1.0), (0.0, 0.025, 0.40), (0.0, 0.40, 1.0))
+
+
+def encode_channels(commands):
+    """Serialize actual 16-bit RGB, including dim values below 256."""
+    return b''.join(struct.pack('!BHHH', cmd.channel_id,
+        *[max(0, min(65535, int(v))) for v in (cmd.red, cmd.green, cmd.blue)])
+        for cmd in commands)
+
+
+def fix_stream_encoder():
+    # hue-entertainment 0.1.2 guesses that values <=255 are 8-bit,
+    # amplifying dim components 257-fold. Retain its header/session handling.
+    from hue_entertainment.dtls import HueDtlsStreamer
+    original = HueDtlsStreamer._build_huestream_message
+    if getattr(original, '_rain_fixed', False): return
+    def build(self, commands):
+        return original(self, []) + encode_channels(commands)
+    build._rain_fixed = True
+    HueDtlsStreamer._build_huestream_message = build
 
 
 def paused():
@@ -106,6 +126,7 @@ def request_stop(*args):
 async def run(preview_rate=None, duration=None):
     sys.path.insert(0,str(ROOT/'hue_rain_lib'))
     from hue_entertainment import EntertainmentSession, LightColorCommand
+    fix_stream_encoder()
     lock=open(ROOT/'hue_rain.lock','a')
     try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     except BlockingIOError:return

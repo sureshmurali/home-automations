@@ -15,7 +15,7 @@ not individually addressable LED pixels.
 
 The background is dim. The falling glow accelerates downward and overlaps adjacent
 sections. Weather checks run separately from rendering to avoid pauses. Colors
-randomly alternate between light blue, dark blue, and turquoise, with a smooth
+randomly alternate between light blue, dark blue, and cyan-blue, with a smooth
 30-second fade across each complete interval. Consecutive targets never repeat.
 
 Manual color/effect commands from Home Assistant (including room/device targets)
@@ -63,3 +63,7 @@ normal exit restore the lamp's pre-stream state. Status is written to
 Home Assistant backups, not the source repository. Continuous streaming consumes
 more resources than the previous periodic shimmer. If the dependency or bridge
 connection fails, inspect `hue_rain.log` and stop streaming before troubleshooting.
+
+The worker corrects the pinned library’s ambiguous 8/16-bit RGB encoding.
+All components use exact 16-bit values, preventing dim red/green components
+from jumping to bright values below 256. Every palette color is blue-dominant.
