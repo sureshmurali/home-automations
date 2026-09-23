@@ -14,12 +14,15 @@ reported interval; polling is every five minutes.
 | 7.5 to below 15 mm/h | 80% |
 | 15 mm/h or more | 100% |
 
-After at least ten minutes at zero rain, the previous on/off, brightness, color,
-and effect setting is restored on the next evaluation. The snapshot survives
-Home Assistant restarts. Missing, invalid, or hour-old readings do not change the
-light. During rain, the automation reapplies blue on its five-minute checks.
-Disable **Hall light - Katsushika rain** to suspend automatic control; disabling
-alone leaves the light in its current setting.
+The saved pre-rain setting survives Home Assistant restarts. Missing, invalid,
+or hour-old readings stop the stream. The automation clears its saved rain
+session after ten dry minutes. Disable **Hall light - Katsushika rain** to stop
+automatic control; the worker releases streaming on its next control check.
+
+Manual off or color commands pause rain for two hours. Off commands sent directly
+to the Hue Bridge are also detected, covering Alexa's direct Hue connection.
+The paused-until helper survives Home Assistant restarts. Earthquake alerts retain
+priority over rain and its manual pause.
 
 Installed on the Pi in `/home/sureshmurali/homeassistant/config/packages/`.
 The configuration includes this directory under the existing `homeassistant:`:
@@ -39,12 +42,14 @@ Sources: [Open-Meteo API](https://open-meteo.com/en/docs),
 
 Edit `homeassistant/packages/hall_rain_light.yaml` in this Git repository.
 This single package contains the rain sensor, saved-setting helper, and automation.
-The brightness thresholds are in the automation's `brightness_pct` template;
+The brightness and speed thresholds are in `helpers/hue_falling_rain.py`;
 the weather location is in the REST `resource` URL.
 
 To deploy an edit or restore this automation on a replacement Pi:
 
 1. Copy `hall_rain_light.yaml` into the Home Assistant config's `packages/` folder.
+   Install the helper, pinned streaming dependency, and private Hue credentials
+   as described in [falling-rain setup](../helpers/HUE_FALLING_RAIN.md).
 2. Add the `packages` include shown above under the existing `homeassistant:`
    section in `configuration.yaml`. Keep other settings in that section.
 3. Check the configuration in Home Assistant's Developer Tools → YAML, then
@@ -61,14 +66,11 @@ full Home Assistant backup separately for complete server recovery.
 
 ## Rainfall motion
 
-While it is raining, **Hall light - rainfall shimmer** runs a short blue brightness
-animation every ten seconds: three brief rises followed by slower fades. The
-original rain mapping sets the peak (15/30/55/80/100%); each glimmer fades to 55%
-of that peak without switching off. This simulates a rain-like shimmer rather
-than vertically moving drops along individual gradient segments.
+One enabled automation, **Hall light - Katsushika rain**, manages the effect,
+weather changes, and manual overrides. The helper streams a downward glow through
+the Hall Signe's three controllable sections at 50 frames per second. Blue shades
+fade into one another over 30 seconds; rain intensity controls speed and peak
+brightness. Other Hue lights are not part of this effect.
 
-`script.hall_rain_shimmer` controls the motion. It checks the earthquake flag
-before each change. Earthquake warnings stop this script and pause its automation,
-then restore the lamp and resume rain control afterwards. Disabling the main
-**Hall light - Katsushika rain** automation also prevents new shimmer runs.
-Missing/stale rain data and dry weather prevent new shimmer runs.
+The former rainfall shimmer automation, manual-color automation, and shimmer
+wrapper script have been removed. See [implementation and test notes](../helpers/HUE_FALLING_RAIN.md).
