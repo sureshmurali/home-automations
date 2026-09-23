@@ -57,7 +57,6 @@ script:
             - automation.pc_desk_hue_on_when_external_display_connected
             - automation.pc_desk_hue_off_when_no_external_display
             - automation.hall_light_katsushika_rain
-            - automation.hall_light_rainfall_shimmer
       - repeat:
           for_each: "{{ lamps }}"
           sequence:
@@ -123,7 +122,6 @@ script:
             - automation.pc_desk_hue_on_when_external_display_connected
             - automation.pc_desk_hue_off_when_no_external_display
             - automation.hall_light_katsushika_rain
-            - automation.hall_light_rainfall_shimmer
           enabled_mask: >-
             {% set ns = namespace(mask='') %}
             {% for e in competing %}{% if is_state(e, 'on') %}{% set ns.mask = ns.mask ~ loop.index0 %}{% endif %}{% endfor %}
@@ -168,7 +166,6 @@ script:
             - script.solar_battery_kitchen_mini_light_mapped_brightness
             - script.pc_hue_desk_on
             - script.pc_hue_desk_off
-            - script.hall_rain_shimmer
       - parallel:
           - sequence:
               - if: >-

@@ -39,6 +39,20 @@ class RainFrames(unittest.TestCase):
             self.assertGreater(color[2], color[1])
             self.assertGreater(color[2], color[0])
 
+    def test_one_controller_and_pause_gate(self):
+        from unittest.mock import patch
+        requested=[]
+        def state(c, entity):
+            requested.append(entity)
+            if entity=='input_boolean.earthquake_alert_active':return {'state':'off'}
+            if entity=='automation.hall_light_katsushika_rain':return {'state':'on'}
+            if entity=='sensor.katsushika_rain_intensity':return {'state':'3','attributes':{'time':r.time.time()}}
+            raise AssertionError('Unexpected dependency: '+entity)
+        with patch.object(r,'paused',return_value=False),patch.object(r,'state',side_effect=state):
+            self.assertEqual(r.rain_rate({}),3)
+        with patch.object(r,'paused',return_value=True),patch.object(r,'state',side_effect=AssertionError('Paused rain must not start')):
+            self.assertEqual(r.rain_rate({}),0)
+
     def test_reverse_and_bounds(self):
         for rate in [0.4,3,20]:
             for t in [0,0.2,0.5,1.2,3]:

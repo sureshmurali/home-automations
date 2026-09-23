@@ -67,3 +67,23 @@ connection fails, inspect `hue_rain.log` and stop streaming before troubleshooti
 The worker corrects the pinned library’s ambiguous 8/16-bit RGB encoding.
 All components use exact 16-bit values, preventing dim red/green components
 from jumping to bright values below 256. Every palette color is blue-dominant.
+
+## Single automation and manual off
+
+Only `automation.hall_light_katsushika_rain` needs to be enabled. It handles
+weather changes, a ten-second recovery check, and manual off/color commands.
+The old rainfall shimmer automation, manual-color automation, and wrapper script
+are removed. The Python helper is still required for 50 Hz Hue Entertainment.
+
+An off command through Home Assistant stops Entertainment first and reapplies off.
+The worker also checks the Hue Bridge on-state every second, covering Alexa/Hue
+commands that bypass Home Assistant. Off pauses rain for two hours and discards
+the old rain restoration snapshot, so it cannot turn the lamp back on. Earthquake
+alerts keep priority. Disabling the one automation stops its active rain worker
+on the next control check.
+
+Live regression validation: run rain, send HA `light.turn_off`, verify the lamp
+is off, Entertainment is inactive, and the pause is approximately 7200 seconds.
+Repeat with a direct Hue Bridge off request; explicitly try restarting rain during
+both pauses. Restore test state afterward. This validates the two control paths;
+it does not validate Alexa's microphone or interpretation of a spoken command.

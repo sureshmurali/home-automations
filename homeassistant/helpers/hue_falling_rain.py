@@ -107,7 +107,6 @@ def rain_rate(c):
     if paused():return 0
     if state(c,'input_boolean.earthquake_alert_active')['state']=='on':return 0
     if state(c,'automation.hall_light_katsushika_rain')['state']!='on':return 0
-    if state(c,'automation.hall_light_rainfall_shimmer')['state']!='on':return 0
     s=state(c,'sensor.katsushika_rain_intensity')
     if not -300 <= time.time()-float(s['attributes'].get('time',0)) < 3600:return 0
     return max(0,float(s['state']))
@@ -131,7 +130,7 @@ async def run(preview_rate=None, duration=None):
     try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
     except BlockingIOError:return
     PID.write_text(str(os.getpid()))
-    c=json.loads(CREDS.read_text());session=None;snapshot=None;started_stream=False;failed=False
+    c=json.loads(CREDS.read_text());session=None;snapshot=None;started_stream=False;failed=False;manual_off=False
     signal.signal(signal.SIGTERM,request_stop);signal.signal(signal.SIGINT,request_stop)
     try:
         rate=preview_rate if preview_rate is not None else await asyncio.to_thread(rain_rate,c)
@@ -154,6 +153,9 @@ async def run(preview_rate=None, duration=None):
         else:snapshot['color']={'xy':light['color']['xy']}
         if light.get('effects'):snapshot['effects']={'effect':light['effects']['status']}
         SNAPSHOT.write_text(json.dumps(snapshot))
+        # Keep the REST on-state meaningful while streaming so direct Hue/Alexa
+        # off commands can be detected even when they bypass Home Assistant.
+        await asyncio.to_thread(bridge,c,'light/'+c['light_id'],{'on':{'on':True}})
         session=EntertainmentSession(c['host'],c['username'],c['clientkey'])
         await session.start(c['area_id'],stop_others=False);started_stream=True
         status('preview' if preview_rate is not None else 'raining')
@@ -161,16 +163,21 @@ async def run(preview_rate=None, duration=None):
         source=PALETTE[0];target=random.choice(PALETTE[1:]);color_start=start
         running=True
         async def monitor():
-            nonlocal rate,running
+            nonlocal rate,running,manual_off
             while running and not STOP:
                 await asyncio.sleep(1)
+                light=(await asyncio.to_thread(bridge,c,'light/'+c['light_id']))[0]
+                if not light['on']['on']:
+                    manual_off=True
+                    await asyncio.to_thread(pause_rain)
+                    running=False;break
                 if preview_rate is None:rate=await asyncio.to_thread(rain_rate,c)
                 elif (await asyncio.to_thread(state,c,'input_boolean.earthquake_alert_active'))['state']=='on':
                     running=False;break
                 if paused() or rate<=0:running=False;break
                 if (await session.remote_status())[0]!='active':
                     # Hue app taking over the stream is a manual override.
-                    pause_rain();running=False;break
+                    await asyncio.to_thread(pause_rain);running=False;break
         monitor_task=asyncio.create_task(monitor())
         try:
             while running and not STOP and (duration is None or time.monotonic()-start<duration):
@@ -195,6 +202,8 @@ async def run(preview_rate=None, duration=None):
         print('Rain stream failed:',type(exc).__name__,flush=True)
     finally:
         if session:await session.aclose()
+        if manual_off:
+            await asyncio.to_thread(bridge,c,'light/'+c['light_id'],{'on':{'on':False}})
         if snapshot and started_stream and not paused():
             # Stop streaming before restoring, so HA can take over for warnings.
             try:await asyncio.to_thread(bridge,c,'light/'+c['light_id'],snapshot)

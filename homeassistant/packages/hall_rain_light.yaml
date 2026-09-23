@@ -1,4 +1,4 @@
-# Hall-only rain animation. Private Hue credentials live on the Pi.
+# One automation owns rain and manual overrides; the helper renders Hue frames.
 rest:
 - resource: https://api.open-meteo.com/v1/forecast?latitude=35.7497&longitude=139.8438&current=rain,showers,weather_code&timeformat=unixtime
   scan_interval: 300
@@ -30,151 +30,127 @@ input_text:
 automation:
 - id: hall_light_katsushika_rain
   alias: Hall light - Katsushika rain
-  description: Blue Hall Hue floor light during rain. Estimated rainfall below 1/2.5/7.5/15 mm per hour gives 15/30/55/80
-    percent brightness; 15+ gives 100 percent. Restore the previous setting after 10 dry minutes. Poll every 5 minutes.
-    Ignore missing or stale weather data.
-  mode: single
-  triggers:
-  - trigger: state
-    entity_id: sensor.katsushika_rain_intensity
-  - trigger: time_pattern
-    minutes: /5
-  - trigger: homeassistant
-    event: start
-  - trigger: state
-    entity_id: light.signe_gradient_floor_1
-    from: unavailable
-  - trigger: state
-    entity_id: light.signe_gradient_floor_1
-    from: unknown
-  conditions:
-  - condition: template
-    value_template: "{{ is_number(states('sensor.katsushika_rain_intensity'))\n   and states('sensor.katsushika_rain_intensity')\
-      \ | float >= 0\n   and -300 <= as_timestamp(now()) - (state_attr('sensor.katsushika_rain_intensity', 'time')\
-      \ | float(0)) < 3600\n   and states('light.signe_gradient_floor_1') in ['on', 'off']\n   and states('input_text.hall_rain_previous_setting')\
-      \ != 'unavailable'\n   and not is_state('input_boolean.earthquake_alert_active', 'on') }}"
-  - &id001
-    condition: template
-    value_template: '{{ as_timestamp(states(''input_datetime.hall_rain_paused_until''), 0) <= as_timestamp(now())
-      }}'
-  actions:
-  - variables:
-      rate: '{{ states(''sensor.katsushika_rain_intensity'') | float }}'
-      saved: '{{ states(''input_text.hall_rain_previous_setting'') | from_json({}) }}'
-  - choose:
-    - conditions: '{{ rate > 0 }}'
-      sequence:
-      - if: '{{ saved.get(''state'') not in [''on'', ''off''] }}'
-        then:
-        - action: input_text.set_value
-          target:
-            entity_id: input_text.hall_rain_previous_setting
-          data:
-            value: "{% set e = 'light.signe_gradient_floor_1' %} {% set d = dict(brightness=state_attr(e, 'brightness')\
-              \ | int(1)) %} {% if state_attr(e, 'color_mode') == 'color_temp' %}\n  {% set d = dict(d, color_temp_kelvin=state_attr(e,\
-              \ 'color_temp_kelvin')) %}\n{% elif state_attr(e, 'xy_color') is not none %}\n  {% set d = dict(d,\
-              \ xy_color=state_attr(e, 'xy_color')) %}\n{% endif %} {% if state_attr(e, 'effect') is not none %}\n\
-              \  {% set d = dict(d, effect=state_attr(e, 'effect')) %}\n{% endif %} {{ dict(state=states(e), data=d)\
-              \ | to_json }}"
-      - action: shell_command.hall_rain_stream_start
-    - conditions:
-      - condition: template
-        value_template: "{{ rate == 0 and saved.get('state') in ['on', 'off']\n   and as_timestamp(now()) - as_timestamp(states.sensor.katsushika_rain_intensity.last_changed)\
-          \ >= 600 }}"
-      sequence:
-      - action: shell_command.hall_rain_stream_stop
-      - if: '{{ saved.state == ''off'' }}'
-        then:
-        - action: light.turn_off
-          target:
-            entity_id: light.signe_gradient_floor_1
-          data:
-            transition: 3
-        else:
-        - action: light.turn_on
-          target:
-            entity_id: light.signe_gradient_floor_1
-          data: '{{ dict(saved.data, transition=3) }}'
-      - action: input_text.set_value
-        target:
-          entity_id: input_text.hall_rain_previous_setting
-        data:
-          value: ''
-- id: hall_light_rain_shimmer
-  alias: Hall light - rainfall shimmer
-  description: Top-to-bottom blue rain streaming while rain data is fresh.
-  mode: single
-  triggers:
-  - trigger: time_pattern
-    seconds: /10
-  conditions:
-  - condition: state
-    entity_id: input_boolean.earthquake_alert_active
-    state: 'off'
-  - condition: state
-    entity_id: automation.hall_light_katsushika_rain
-    state: 'on'
-  - condition: state
-    entity_id: light.signe_gradient_floor_1
-    state: 'on'
-  - condition: template
-    value_template: "{{ states('sensor.katsushika_rain_intensity') | float(0) > 0\n   and -300 <= as_timestamp(now())\
-      \ - (state_attr('sensor.katsushika_rain_intensity','time') | float(0)) < 3600\n   and (states('input_text.hall_rain_previous_setting')\
-      \ | from_json({})).get('state') in ['on','off'] }}"
-  - *id001
-  actions:
-  - action: script.hall_rain_shimmer
-- id: hall_rain_manual_color_pause
-  alias: Hall rain - pause two hours after manual color
-  mode: restart
+  description: Hall-only falling blue rain. Manual off or color changes pause rain for two hours; earthquake alerts
+    take priority.
+  mode: queued
   triggers:
   - trigger: event
     event_type: call_service
     event_data:
       domain: light
-      service: turn_on
+    id: command
+  - trigger: state
+    entity_id: sensor.katsushika_rain_intensity
+    id: weather
+  - trigger: time_pattern
+    seconds: /10
+    id: tick
+  - trigger: homeassistant
+    event: start
+    id: startup
+  max: 10
   conditions:
-  - condition: template
-    value_template: "{% set e = trigger.event %}\n{% set d = e.data.service_data %}\n{% set ids = d.get('entity_id',\
-      \ []) %}\n{% set ids = [ids] if ids is string else ids %}\n{% set areas = d.get('area_id', []) %}\n{% set\
-      \ areas = [areas] if areas is string else areas %}\n{% set devices = d.get('device_id', []) %}\n{% set devices\
-      \ = [devices] if devices is string else devices %}\n{% set ns = namespace(ids=ids) %}\n{% for a in areas %}{%\
-      \ set ns.ids = ns.ids + area_entities(a) %}{% endfor %}\n{% for a in devices %}{% set ns.ids = ns.ids + device_entities(a)\
-      \ %}{% endfor %}\n{{ e.context.user_id is not none and e.context.parent_id is none\n   and ('all' in ids or\
-      \ 'light.signe_gradient_floor_1' in (expand(ns.ids) | map(attribute='entity_id') | list))\n   and (d.keys()\
-      \ | list | intersect(['hs_color','xy_color','rgb_color','rgbw_color','rgbww_color','color_name','color_temp_kelvin','kelvin','color_temp','effect'])\
-      \ | count > 0) }}"
+  - condition: state
+    entity_id: input_boolean.earthquake_alert_active
+    state: 'off'
   actions:
-  - action: input_datetime.set_datetime
-    target:
-      entity_id: input_datetime.hall_rain_paused_until
-    data:
-      timestamp: '{{ as_timestamp(now()) + 7200 }}'
-  - action: shell_command.hall_rain_stream_pause
-  - action: input_text.set_value
-    target:
-      entity_id: input_text.hall_rain_previous_setting
-    data:
-      value: ''
-  - delay:
-      milliseconds: 500
-  - action: light.turn_on
-    data: '{{ trigger.event.data.service_data }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{% if trigger.id | default('') == 'command' %}\n{% set e = trigger.event %}\n{% set d =\
+          \ e.data.service_data %}\n{% set ids = d.get('entity_id', []) %}\n{% set ids = [ids] if ids is string\
+          \ else ids %}\n{% set areas = d.get('area_id', []) %}\n{% set areas = [areas] if areas is string else\
+          \ areas %}\n{% set devices = d.get('device_id', []) %}\n{% set devices = [devices] if devices is string\
+          \ else devices %}\n{% set ns = namespace(ids=ids) %}\n{% for a in areas %}{% set ns.ids = ns.ids + area_entities(a)\
+          \ %}{% endfor %}\n{% for a in devices %}{% set ns.ids = ns.ids + device_entities(a) %}{% endfor %}\n{{\
+          \ e.context.parent_id is none\n   and ('all' in ids or 'light.signe_gradient_floor_1' in (expand(ns.ids)\
+          \ | map(attribute='entity_id') | list))\n   and (e.data.service == 'turn_off' or (d.keys() | list | intersect(['hs_color','xy_color','rgb_color','rgbw_color','rgbww_color','color_name','color_temp_kelvin','kelvin','color_temp','effect'])\
+          \ | count > 0)) }}\n{% else %}false{% endif %}"
+      sequence:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.hall_rain_paused_until
+        data:
+          timestamp: '{{ as_timestamp(now()) + 7200 }}'
+      - action: shell_command.hall_rain_stream_pause
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.hall_rain_previous_setting
+        data:
+          value: ''
+      - delay:
+          milliseconds: 500
+      - choose:
+        - conditions: '{{ trigger.id == ''command'' and trigger.event.data.service == ''turn_on'' }}'
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.signe_gradient_floor_1
+            data: '{{ dict(trigger.event.data.service_data.items() | rejectattr(''0'', ''in'', [''entity_id'',''area_id'',''device_id'',''floor_id'',''label_id''])
+              | list) }}'
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.signe_gradient_floor_1
+          data:
+            transition: 0
+    default:
+    - condition: template
+      value_template: '{{ trigger.id | default(''tick'') not in [''command'', ''lamp_off''] }}'
+    - condition: template
+      value_template: "{{ is_number(states('sensor.katsushika_rain_intensity'))\n   and states('sensor.katsushika_rain_intensity')\
+        \ | float >= 0\n   and -300 <= as_timestamp(now()) - (state_attr('sensor.katsushika_rain_intensity', 'time')\
+        \ | float(0)) < 3600\n   and states('light.signe_gradient_floor_1') in ['on', 'off']\n   and states('input_text.hall_rain_previous_setting')\
+        \ != 'unavailable'\n   and not is_state('input_boolean.earthquake_alert_active', 'on') }}"
+    - condition: template
+      value_template: '{{ as_timestamp(states(''input_datetime.hall_rain_paused_until''), 0) <= as_timestamp(now())
+        }}'
+    - variables:
+        rate: '{{ states(''sensor.katsushika_rain_intensity'') | float(0) }}'
+        saved: '{{ states(''input_text.hall_rain_previous_setting'') | from_json({}) }}'
+    - choose:
+      - conditions: '{{ rate > 0 }}'
+        sequence:
+        - if: '{{ saved.get(''state'') not in [''on'', ''off''] }}'
+          then:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.hall_rain_previous_setting
+            data:
+              value: "{% set e = 'light.signe_gradient_floor_1' %} {% set d = dict(brightness=state_attr(e, 'brightness')\
+                \ | int(1)) %} {% if state_attr(e, 'color_mode') == 'color_temp' %}\n  {% set d = dict(d, color_temp_kelvin=state_attr(e,\
+                \ 'color_temp_kelvin')) %}\n{% elif state_attr(e, 'xy_color') is not none %}\n  {% set d = dict(d,\
+                \ xy_color=state_attr(e, 'xy_color')) %}\n{% endif %} {% if state_attr(e, 'effect') is not none\
+                \ %}\n  {% set d = dict(d, effect=state_attr(e, 'effect')) %}\n{% endif %} {{ dict(state=states(e),\
+                \ data=d) | to_json }}"
+        - action: shell_command.hall_rain_stream_start
+      - conditions:
+        - condition: template
+          value_template: "{{ rate == 0 and saved.get('state') in ['on', 'off']\n   and as_timestamp(now()) - as_timestamp(states.sensor.katsushika_rain_intensity.last_changed)\
+            \ >= 600 }}"
+        sequence:
+        - action: input_text.set_value
+          target:
+            entity_id: input_text.hall_rain_previous_setting
+          data:
+            value: ''
+        - action: shell_command.hall_rain_stream_stop
+        - if: '{{ saved.state == ''off'' }}'
+          then:
+          - action: light.turn_off
+            target:
+              entity_id: light.signe_gradient_floor_1
+            data:
+              transition: 3
+          else:
+          - action: light.turn_on
+            target:
+              entity_id: light.signe_gradient_floor_1
+            data: '{{ dict(saved.data, transition=3) }}'
 shell_command:
   hall_rain_stream_start: python3 /config/helpers/hue_falling_rain.py start
   hall_rain_stream_stop: python3 /config/helpers/hue_falling_rain.py stop
   hall_rain_stream_pause: python3 /config/helpers/hue_falling_rain.py pause
-script:
-  hall_rain_shimmer:
-    alias: Hall light - falling blue rain
-    description: Start the Hall-only Hue Entertainment rain stream; speed follows rainfall.
-    mode: single
-    sequence:
-    - *id001
-    - condition: state
-      entity_id: input_boolean.earthquake_alert_active
-      state: 'off'
-    - action: shell_command.hall_rain_stream_start
 input_datetime:
   hall_rain_paused_until:
     name: Hall rain paused until
