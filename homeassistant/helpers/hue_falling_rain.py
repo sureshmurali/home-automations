@@ -105,7 +105,6 @@ def state(c, entity):
 
 def rain_rate(c):
     if paused():return 0
-    if state(c,'input_boolean.earthquake_alert_active')['state']=='on':return 0
     if state(c,'automation.hall_light_katsushika_rain')['state']!='on':return 0
     s=state(c,'sensor.katsushika_rain_intensity')
     if not -300 <= time.time()-float(s['attributes'].get('time',0)) < 3600:return 0
@@ -172,8 +171,6 @@ async def run(preview_rate=None, duration=None):
                     await asyncio.to_thread(pause_rain)
                     running=False;break
                 if preview_rate is None:rate=await asyncio.to_thread(rain_rate,c)
-                elif (await asyncio.to_thread(state,c,'input_boolean.earthquake_alert_active'))['state']=='on':
-                    running=False;break
                 if paused() or rate<=0:running=False;break
                 if (await session.remote_status())[0]!='active':
                     # Hue app taking over the stream is a manual override.

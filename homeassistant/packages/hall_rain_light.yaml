@@ -30,8 +30,7 @@ input_text:
 automation:
 - id: hall_light_katsushika_rain
   alias: Hall light - Katsushika rain
-  description: Hall-only falling blue rain. Manual off or color changes pause rain for two hours; earthquake alerts
-    take priority.
+  description: Hall-only falling blue rain. Manual off or color changes pause rain for two hours.
   mode: queued
   triggers:
   - trigger: event
@@ -49,10 +48,6 @@ automation:
     event: start
     id: startup
   max: 10
-  conditions:
-  - condition: state
-    entity_id: input_boolean.earthquake_alert_active
-    state: 'off'
   actions:
   - choose:
     - conditions:
@@ -101,7 +96,7 @@ automation:
       value_template: "{{ is_number(states('sensor.katsushika_rain_intensity'))\n   and states('sensor.katsushika_rain_intensity')\
         \ | float >= 0\n   and -300 <= as_timestamp(now()) - (state_attr('sensor.katsushika_rain_intensity', 'time')\
         \ | float(0)) < 3600\n   and states('light.signe_gradient_floor_1') in ['on', 'off']\n   and states('input_text.hall_rain_previous_setting')\
-        \ != 'unavailable'\n   and not is_state('input_boolean.earthquake_alert_active', 'on') }}"
+        \ != 'unavailable' }}"
     - condition: template
       value_template: '{{ as_timestamp(states(''input_datetime.hall_rain_paused_until''), 0) <= as_timestamp(now())
         }}'

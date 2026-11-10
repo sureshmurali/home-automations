@@ -21,8 +21,7 @@ automatic control; the worker releases streaming on its next control check.
 
 Manual off or color commands pause rain for two hours. Off commands sent directly
 to the Hue Bridge are also detected, covering Alexa's direct Hue connection.
-The paused-until helper survives Home Assistant restarts. Earthquake alerts retain
-priority over rain and its manual pause.
+The paused-until helper survives Home Assistant restarts.
 
 Installed on the Pi in `/home/sureshmurali/homeassistant/config/packages/`.
 The configuration includes this directory under the existing `homeassistant:`:

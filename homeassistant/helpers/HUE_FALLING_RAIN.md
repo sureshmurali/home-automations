@@ -22,12 +22,12 @@ Manual color/effect commands from Home Assistant (including room/device targets)
 stop streaming, apply the chosen setting, and pause rain for two hours. The
 `input_datetime.hall_rain_paused_until` helper shows when it can resume. A Hue app
 takeover that ends Entertainment streaming also starts this pause. The pause
-persists across restarts; earthquake warnings still take priority.
+persists across restarts.
 
 The background follows the selected blue/turquoise shade. The direction can be reversed with `reverse` in the
 private runtime configuration. Rain control checks the weather and automation
-states every second; a separate stop command releases streaming before an
-earthquake alert or normal rain-state restoration. Other active Hue entertainment
+states every second; a separate stop command releases streaming before
+normal rain-state restoration. Other active Hue entertainment
 areas (TV or PC sync) take priority over rain. Hue only supports one entertainment
 stream at a time.
 
@@ -45,7 +45,7 @@ stream at a time.
 5. Store `host`, `username`, `clientkey`, `area_id`, `light_id`, `ha_url`, `ha_token`,
    and `reverse` in `/config/hue_rain_credentials.json` with mode 0600. Never commit
    this file. The HA URL is the local container endpoint.
-6. Deploy the updated rain and earthquake packages, validate, and restart Home
+6. Deploy the updated rain package, validate, and restart Home
    Assistant for newly added shell commands.
 
 Preview commands inside the container:
@@ -78,8 +78,7 @@ are removed. The Python helper is still required for 50 Hz Hue Entertainment.
 An off command through Home Assistant stops Entertainment first and reapplies off.
 The worker also checks the Hue Bridge on-state every second, covering Alexa/Hue
 commands that bypass Home Assistant. Off pauses rain for two hours and discards
-the old rain restoration snapshot, so it cannot turn the lamp back on. Earthquake
-alerts keep priority. Disabling the one automation stops its active rain worker
+the old rain restoration snapshot, so it cannot turn the lamp back on. Disabling the one automation stops its active rain worker
 on the next control check.
 
 Live regression validation: run rain, send HA `light.turn_off`, verify the lamp

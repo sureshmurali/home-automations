@@ -44,7 +44,6 @@ class RainFrames(unittest.TestCase):
         requested=[]
         def state(c, entity):
             requested.append(entity)
-            if entity=='input_boolean.earthquake_alert_active':return {'state':'off'}
             if entity=='automation.hall_light_katsushika_rain':return {'state':'on'}
             if entity=='sensor.katsushika_rain_intensity':return {'state':'3','attributes':{'time':r.time.time()}}
             raise AssertionError('Unexpected dependency: '+entity)
